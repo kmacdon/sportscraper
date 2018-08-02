@@ -1,40 +1,39 @@
-nfl_player <- function(url, player){
-  #This is the code to seach for player name on basketball reference
-  s <- html_session(url)
-  f <- html_form(s)[[1]] %>%
-    set_values(., search=player)
-  s <- submit_form(s,f)$url %>%
-    html_session(.)
 
-  #This checks if search goes directly to player page or search page
-  #search page ends in '=', players page ends in 'html'
-  if(str_sub(s$url, nchar(s$url), -1) == "="){
-    if(class(follow_link(s, player)) == "try-error"){
-      stop(paste("No player named", player, "in database."))
-    }
-    s <- follow_link(s, player)
-    # warning("Multiple players returned. Selecting first on search page.")
+#' Scrape Team Season Stats
+#'
+#' Scrape the stats for a specific range of seasons for a team
+#' @param team A string containing the full name of the team
+#' @param league A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'
+#' @result A tibble containing seasonal data for the team
+#' @export
+team_stats <- function(team, league, years){
+  if(league == "NBA"){
+    df <- nba_team(team)
   }
+  df
+}
 
-  #Data cleaning
+nba_team <- function(team){
+  url <- "https://www.basketball-reference.com/"
+  df <- list()
+  s <- access_page(url, team)
   df <- s %>%
     read_html(.) %>%
     html_table(., fill=T) %>%
     as.data.frame(.) %>%
-    as.tibble(.) %>%
-    dplyr::filter(., Year != "Career")
-  df$Year <- substr(df$Year, 1, 4)
+    as.tibble(.)
+  df <- df[-1, 1:15]
+  df <- df[, -9]
+  s <- jump_to(s, "stats_per_game_totals.html")
+  df2 <- s %>%
+    read_html(.) %>%
+    html_table(., fill=T) %>%
+    as.data.frame(.) %>%
+    as.tibble(.)
 
-  #Checks if player has team stats too (only if he's been traded)
-  if(length(grep("season", df$Season))> 0){
-    df <- df %>%
-      .[-grep("season", .$Season), ]
-  }
-  # df <- separate(df, QBRec, c("W","L","T"), sep = "-")
-  df$Names <- rep(player, nrow(df))
+  names(df2)[c(16:22, 25)] <- c("FG%","3PM","3PA","3P%","2PM","2PA","2P%","FT%")
+  df2 <- df2[, -c(2:7, 11, 12)]
+  df <- df %>%
+    inner_join(., df2, by = "Season")
   df
 }
-
-nba_player("Tom Brady", "https://www.pro-football-reference.com")
-player = "Tom Brady"
-url = "https://www.pro-football-reference.com"
