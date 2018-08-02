@@ -1,7 +1,7 @@
 
 #' Scrape Team Season Stats
 #'
-#' Scrape the seasonal statistics for a specific team
+#' Scrape the seasonal statistics for a specific team.
 #' @param team A string containing the full name of the team
 #' @param league A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'
 #' @param defensive Whether to return defensive stats or offensive
@@ -25,8 +25,10 @@ nba_team <- function(team, defensive){
     html_table(., fill=T) %>%
     as.data.frame(.) %>%
     as.tibble(.)
+  #remove unnecessary columns and rows
   df <- df[-1, 1:15]
   df <- df[, -9]
+
   if (defensive){
     s <- jump_to(s, "opp_stats_per_game_totals.html")
   } else {
@@ -48,5 +50,22 @@ nba_team <- function(team, defensive){
 
   df <- df %>%
     inner_join(., df2, by = "Season")
+  df
+}
+
+nhl_team <- function(team, defensive){
+  url <- "https://www.hockey-reference.com"
+  df <- list()
+  s <- access_page(url, team)
+  df <- s %>%
+    read_html(.) %>%
+    html_table(., fill=T) %>%
+    as.data.frame(.) %>%
+    as.tibble(.)
+  #remove unnecessary columns and rows
+  df <- df[-1, 1:12]
+  df$T[is.na(df$T)] <- 0
+  df$Team <- str_extract(df$Team, "[a-zA-Z_ ]*")
+
   df
 }
