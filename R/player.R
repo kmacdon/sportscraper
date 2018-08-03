@@ -19,11 +19,20 @@
 #' Scrape the career per game statistics for a given player
 #' @param player A string containing the player's full name
 #' @param league A string containing the league to be searched. One of: 'NFL', 'NBA', 'MLB', 'NHL'.
-#' @return Returns a data frame containing the career per game stats by season.
+#' @return Returns a data frame containing the career per game stats by season. Descriptions of statistics
+#'     can be found by searching the following sites:
+#'     \itemize{
+#'        \item www.basketball-reference.com
+#'        \item www.pro-football-reference.com
+#'        \item www.hockey-reference.com
+#'        \item www.baseball-reference.com
+#'     }
+#'
+#'
 #' @export
-player_stats <- function(player, league){
+player_stats <- function(player, league, ...){
   if(league == "NBA"){
-    df <- nba_player(player)
+    df <- nba_player(player, ...)
   } else if (league == "NFL"){
     df <- nfl_player(player)
   } else if (league == "NHL"){
@@ -52,24 +61,33 @@ access_page <- function(url, search){
   s
 }
 
-nba_player <- function(player){
+nba_player <- function(player, advanced = F){
   url <- "https://www.basketball-reference.com/"
-  s <- access_player_page(url, player)
+  s <- access_page(url, player)
 
   #Data cleaning
-  df <- s %>%
-    read_html(.) %>%
-    html_table(., fill=T) %>%
-    as.data.frame(.) %>%
-    as.tibble(.) %>%
-    dplyr::filter(., Season != "Career")
-
+  if(!advanced){
+    df <- s %>%
+      read_html(.) %>%
+      html_table(., fill=T) %>%
+      as.data.frame(.) %>%
+      as.tibble(.) %>%
+      dplyr::filter(., Season != "Career")
+  } else {
+    df <- s %>% read_html(.) %>%
+      html_nodes(., xpath = "//comment()") %>%
+      html_text(.) %>%
+      paste(., collapse = "") %>%
+      read_html(.) %>%
+      html_table(., fill = T) %>%
+      .[[4]] %>%
+      .[, grep("[a-zA-Z]", names(df))]
+  }
   #Checks if player has team stats too (only if he's been traded)
   if(length(grep("season", df$Season))> 0){
     df <- df %>%
       .[-grep("season", .$Season), ]
   }
-  df
   names(df)[11:21] <- c("FG%", "3PM", "3PA", "3P%", "2PM", "2PA", "2P%", "eFG%", "FT", "FTA", "FT%")
   df$Names <- rep(player, nrow(df))
   df
@@ -77,7 +95,7 @@ nba_player <- function(player){
 
 nfl_player <- function(player){
   url <- "https://www.pro-football-reference.com"
-  s <- access_player_page(url, player)
+  s <- access_page(url, player)
 
   #Data cleaning
   df <- s %>%
@@ -89,18 +107,23 @@ nfl_player <- function(player){
 
 
   #Checks if player has team stats too (only if he's been traded)
-  if(length(grep("season", df$Season))> 0){
+  if(length(grep("season", df$Year)) > 0){
     df <- df %>%
-      .[-grep("season", .$Season), ]
+      .[-grep("season", .$Year), ]
   }
-  # df <- separate(df, QBRec, c("W","L","T"), sep = "-")
+  df <- suppressWarnings(separate(df, QBrec, c("W","L","Ties"), sep = "-"))
+  #In case QBrec is '0'
+  df$W[is.na(df$W)] <- 0
+  df$Ties[is.na(df$Ties)] <- 0
+
   df$Names <- rep(player, nrow(df))
+  df$Year <- str_extract(df$Year, "[0-9]*")
   df
 }
 
 nhl_player <- function(player){
   url <- "https://www.hockey-reference.com"
-  s <- access_player_page(url, player)
+  s <- access_page(url, player)
 
   #Data cleaning
   df <- s %>%
@@ -117,7 +140,8 @@ nhl_player <- function(player){
     df <- df[, -grep("Awards", names(df))]
 
   df <- df %>%
-    filter(., Season != "Career")
+    filter(., Season != "Career") %>%
+    .[-1, ]
   #Checks if player has team stats too (only if he's been traded)
   if(length(grep("season", df$Season))> 0){
     df <- df %>%

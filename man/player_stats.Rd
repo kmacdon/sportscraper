@@ -4,7 +4,7 @@
 \alias{player_stats}
 \title{Player PG Stats}
 \usage{
-player_stats(player, league)
+player_stats(player, league, ...)
 }
 \arguments{
 \item{player}{A string containing the player's full name}
@@ -12,7 +12,14 @@ player_stats(player, league)
 \item{league}{A string containing the league to be searched. One of: 'NFL', 'NBA', 'MLB', 'NHL'.}
 }
 \value{
-Returns a data frame containing the career per game stats by season.
+Returns a data frame containing the career per game stats by season. Descriptions of statistics
+    can be found by searching the following sites:
+    \itemize{
+       \item www.basketball-reference.com
+       \item www.pro-football-reference.com
+       \item www.hockey-reference.com
+       \item www.baseball-reference.com
+    }
 }
 \description{
 Scrape the career per game statistics for a given player

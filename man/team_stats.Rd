@@ -19,5 +19,5 @@ A tibble containing seasonal data for the team. Both offensive
     season and then the rest are their respective statistics.
 }
 \description{
-Scrape the seasonal statistics for a specific team
+Scrape the seasonal statistics for a specific team.
 }
