@@ -37,6 +37,8 @@ player_stats <- function(player, league, ...){
     df <- nfl_player(player)
   } else if (league == "NHL"){
     df <- nhl_player(player)
+  } else if (league == "MLB"){
+    df <- mlb_player(player)
   }
   as.tibble(df)
 }
@@ -147,7 +149,30 @@ nhl_player <- function(player){
     df <- df %>%
       .[-grep("season", .$Season), ]
   }
-  # df <- separate(df, QBRec, c("W","L","T"), sep = "-")
+
+  df$Names <- rep(player, nrow(df))
+  df
+}
+
+mlb_player <- function(player){
+  url <- "https://www.baseball-reference.com"
+  s <- access_page(url, player)
+
+  #Data cleaning
+  df <- s %>%
+    read_html(.) %>%
+    html_table(., fill=T) %>%
+    as.data.frame(.) %>%
+    as.tibble(.) %>%
+    select(., -Awards) %>%
+    filter(., str_detect(Year, "[0-9]{4}"))
+  if(grep("Awards", names(df)))
+    df <- df[, -grep("Awards", names(df))]
+
+  df <- df %>%
+    filter(., Season != "Career") %>%
+    .[-1, ]
+
   df$Names <- rep(player, nrow(df))
   df
 }
