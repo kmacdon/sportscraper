@@ -12,13 +12,18 @@
 team_stats <- function(team, league, defensive = F){
   if(league == "NBA"){
     df <- nba_team(team, defensive)
+  } else if (league == "NHL"){
+    df <- nhl_team(team)
+  } else if (league == "MLB"){
+    df <- mlb_team(team, defensive)
+  } else {
+    stop("Error: league not recognized")
   }
   df
 }
 
 nba_team <- function(team, defensive){
   url <- "https://www.basketball-reference.com/"
-  df <- list()
   s <- access_page(url, team)
   df <- s %>%
     read_html(.) %>%
@@ -53,9 +58,8 @@ nba_team <- function(team, defensive){
   df
 }
 
-nhl_team <- function(team, defensive){
+nhl_team <- function(team){
   url <- "https://www.hockey-reference.com"
-  df <- list()
   s <- access_page(url, team)
   df <- s %>%
     read_html(.) %>%
@@ -66,6 +70,20 @@ nhl_team <- function(team, defensive){
   df <- df[-1, 1:12]
   df$T[is.na(df$T)] <- 0
   df$Team <- str_extract(df$Team, "[a-zA-Z_ ]*")
+
+  df
+}
+
+mlb_team <- function(team, defensive){
+  url <- "https://www.baseball-reference.com"
+  s <- access_page(url, team)
+  df <- s %>%
+    read_html(.) %>%
+    html_table(., fill=T) %>%
+    as.data.frame(.) %>%
+    as.tibble(.) %>%
+    .[, 1:19]
+  #remove unnecessary columns and rows
 
   df
 }

@@ -6,14 +6,18 @@ Author: Kevin MacDonald
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: Provides functions for scraping data from affiliate sites
     of Sports-Reference.com to acqure data from the following leagues:
-    NBA, MLB, NFL, NHL.
+    NBA, MLB, NFL, NHL, CBB.
 Depends:
+  R(>= 3.4)
+Imports:
   rvest,
   dplyr,
   stringr,
   purrr,
   tibble,
-  tidyr
+  tidyr,
+  magrittr,
+  xml2
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

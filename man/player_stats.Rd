@@ -4,12 +4,14 @@
 \alias{player_stats}
 \title{Player PG Stats}
 \usage{
-player_stats(player, league, ...)
+player_stats(player, league, advanced = F)
 }
 \arguments{
 \item{player}{A string containing the player's full name}
 
-\item{league}{A string containing the league to be searched. One of: 'NFL', 'NBA', 'MLB', 'NHL'.}
+\item{league}{A string containing the league to be searched. One of: 'NFL', 'NBA', 'MLB', 'NHL', 'CBB'.}
+
+\item{advanced}{Default is false. Make true to retrieve advanced NBA and MLB stats.}
 }
 \value{
 Returns a data frame containing the career per game stats by season. Descriptions of statistics
@@ -23,4 +25,7 @@ Returns a data frame containing the career per game stats by season. Description
 }
 \description{
 Scrape the career per game statistics for a given player
+}
+\examples{
+   df <- player_stats("Kobe Bryant", "NBA")
 }
