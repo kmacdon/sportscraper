@@ -9,14 +9,12 @@ and seasons.
 Installation
 ------------
 
-Example
--------
-
 ``` r
 devtools::install_github("kmacdon/sportscraper")
 ```
 
-\#\#Usage
+Usage
+-----
 
 This package provides three functions for scraping data one each for
 players, teams and seasons.
@@ -35,4 +33,5 @@ df <- team_stats("Boston Bruins", "NHL")
 
 The team function accepts a team and a league and returns the season
 stats for their entire history. Currently this does not work for NFL
-teams as I am still implementing that.
+teams as I am still implementing that. Please report any issues or
+suggestions on the Issues tab

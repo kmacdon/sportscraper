@@ -11,7 +11,7 @@ player_stats(player, league, advanced = F)
 
 \item{league}{A string containing the league to be searched. One of: 'NFL', 'NBA', 'MLB', 'NHL', 'CBB'.}
 
-\item{advanced}{Default is false. Make true to retrieve advanced NBA and MLB stats.}
+\item{advanced}{Default is false. Make true to retrieve advanced NBA, CBB, and MLB stats.}
 }
 \value{
 Returns a data frame containing the career per game stats by season. Descriptions of statistics
