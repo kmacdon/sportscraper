@@ -11,6 +11,7 @@
 #'        \item www.pro-football-reference.com
 #'        \item www.hockey-reference.com
 #'        \item www.baseball-reference.com
+#'        \item www.sports-reference.com/cbb
 #'     }
 #'
 #' @examples
@@ -33,8 +34,8 @@ player_stats <- function(player, league, advanced = F){
   tibble::as.tibble(df)
 }
 
+# This function searches for player and navigates to appropriate page
 access_page <- function(url, search){
-  #This is the code to seach for player name on basketball reference
   s <- rvest::html_session(url)
   f <-
     rvest::html_form(s)[[1]] %>%
@@ -43,14 +44,48 @@ access_page <- function(url, search){
     rvest::submit_form(s,f)$url %>%
     rvest::html_session(.)
 
-  #This checks if search goes directly to player page or search page
-  #search page ends in '=', players page ends in 'html'
+  # This checks if search goes directly to player page or search page
+  # search page ends in '=', players page ends in 'html'
   if(stringr::str_sub(s$url, nchar(s$url), -1) == "="){
     if(class(tryCatch(follow_link(s, search))) == "try-error"){
       stop(paste("No ", search, "in database."))
     }
-    s <- follow_link(s, search)
-    # warning("Multiple players returned. Selecting first on search page.")
+    # Figure out how many players show up in search results
+    text <-
+      s %>%
+      xml2::read_html(.) %>%
+      rvest::html_text(.)
+    choices <-
+      text %>%
+      str_extract_all(., paste(search, "\\(.*?\\)")) %>%
+      unlist(.)
+    if(length(choices) > 1){
+      # Present option to select player based on years played
+      print("Multiple players with that name")
+      links <-
+        text %>%
+        stringr::str_remove_all(., "\n") %>%
+        stringr::str_squish(.) %>%
+        stringr::str_extract_all(., "\\) /.*?\\.html") %>%
+        unlist(.) %>%
+        stringr::str_extract(., "/players/.*?.html")
+      links <- paste(url, links, sep = "")
+
+      print(choices)
+      while(1){
+        selection <- as.numeric(readline(prompt = "Enter number of player to pick: "))
+        if(selection %in% 1:length(choices)){
+          s <- rvest::html_session(links[selection])
+          break
+        } else {
+          print("Invalid choice. Please choose again")
+        }
+      }
+    } else {
+      # Follow link if there is only one player in results
+      s <- rvest::follow_link(s, search)
+    }
+
   }
   s
 }
@@ -164,11 +199,11 @@ mlb_player <- function(player, advanced){
       rvest::html_table(., fill=T) %>%
       as.data.frame(.) %>%
       as.tibble(.) %>%
-      select(., -Awards) %>%
-      filter(., stringr::str_detect(Year, "[0-9]{4}"))
+      dplyr::select(., -Awards) %>%
+      dplyr::filter(., stringr::str_detect(Year, "[0-9]{4}"))
   } else {
     df <-
-      s %>% read_html(.) %>%
+      s %>% xml2::read_html(.) %>%
       rvest::html_nodes(., xpath = "//comment()") %>%
       rvest::html_text(.) %>%
       paste(., collapse = "") %>%
@@ -177,7 +212,7 @@ mlb_player <- function(player, advanced){
       .[[1]] %>%
       tibble::as_tibble(.) %>%
       .[grep("[0-9]{4}", .$Year), ] %>%
-      select(., -Awards)
+      dplyr::select(., -Awards)
   }
 
   df$Name <- rep(player, nrow(df))

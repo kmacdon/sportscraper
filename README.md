@@ -25,7 +25,10 @@ df <- player_stats("Kobe Bryant", "NBA")
 
 The player function accepts a player name and league than returns their
 per game statistics. For NBA and MLB players, the argument `advanced`
-can be set to true to return advanced statistics instead.
+can be set to true to return advanced statistics instead. If there are
+multiple players with the same name, a list will be presented with the
+years that each player played, and you will be prompted to select one to
+continue with.
 
 ``` r
 df <- team_stats("Boston Bruins", "NHL")
