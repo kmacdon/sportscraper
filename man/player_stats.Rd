@@ -21,6 +21,7 @@ Returns a data frame containing the career per game stats by season. Description
        \item www.pro-football-reference.com
        \item www.hockey-reference.com
        \item www.baseball-reference.com
+       \item www.sports-reference.com/cbb
     }
 }
 \description{

@@ -13,10 +13,6 @@ Imports:
   rvest,
   dplyr,
   stringr,
-  purrr,
-  tibble,
-  tidyr,
-  magrittr,
   xml2
 License: MIT + file LICENSE
 Encoding: UTF-8

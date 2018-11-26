@@ -2,3 +2,4 @@
 
 export(player_stats)
 export(team_stats)
+importFrom(magrittr,"%>%")

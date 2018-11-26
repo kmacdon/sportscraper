@@ -31,8 +31,10 @@ player_stats <- function(player, league, advanced = F){
   } else {
     stop("Error: league not recognized")
   }
-  tibble::as.tibble(df)
+  df
 }
+
+#' @importFrom magrittr "%>%"
 
 # This function searches for player and navigates to appropriate page
 access_page <- function(url, search){
@@ -47,7 +49,7 @@ access_page <- function(url, search){
   # This checks if search goes directly to player page or search page
   # search page ends in '=', players page ends in 'html'
   if(stringr::str_sub(s$url, nchar(s$url), -1) == "="){
-    if(class(tryCatch(follow_link(s, search))) == "try-error"){
+    if(class(tryCatch(rvest::follow_link(s, search))) == "try-error"){
       stop(paste("No ", search, "in database."))
     }
     # Figure out how many players show up in search results
@@ -57,18 +59,17 @@ access_page <- function(url, search){
       rvest::html_text(.)
     choices <-
       text %>%
-      str_extract_all(., paste(search, "\\(.*?\\)")) %>%
+      stringr::str_extract_all(., paste(search, ".*?\\n")) %>%
+      lapply(., stringr::str_remove, pattern = "\\n") %>%
       unlist(.)
     if(length(choices) > 1){
       # Present option to select player based on years played
       print("Multiple players with that name")
       links <-
         text %>%
-        stringr::str_remove_all(., "\n") %>%
-        stringr::str_squish(.) %>%
-        stringr::str_extract_all(., "\\) /.*?\\.html") %>%
+        stringr::str_extract_all(., "/players.*\\n") %>%
         unlist(.) %>%
-        stringr::str_extract(., "/players/.*?.html")
+        stringr::str_remove(., "\\n")
       links <- paste(url, links, sep = "")
 
       print(choices)
@@ -92,177 +93,162 @@ access_page <- function(url, search){
 
 nba_player <- function(player, advanced){
   url <- "https://www.basketball-reference.com/"
-  s <- access_page(url, player)
+  page <- access_page(url, player)
 
-  #Data cleaning
+  # Data collection
   if(!advanced){
     df <-
-      s %>%
+      page %>%
       xml2::read_html(.) %>%
       rvest::html_table(., fill=T) %>%
-      as.data.frame(.) %>%
-      tibble::as_tibble(.) %>%
-      dplyr::filter(., Season != "Career")
+      as.data.frame(.)
   } else {
     df <-
-      s %>% read_html(.) %>%
-      rvest::html_nodes(., xpath = "//comment()") %>%
-      rvest::html_text(.) %>%
-      paste(., collapse = "") %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill = T) %>%
-      .[[4]] %>%
-      .[, -c(20, 25)] %>%
-      tibble::as_tibble(.) %>%
-      .[, grep("[a-zA-Z]", names(.))]
-  }
-  #Checks if player has team stats too (only if he's been traded)
-  if(length(grep("season", df$Season))> 0){
-    df <- df %>%
-      .[-grep("season", .$Season), ]
-  }
-  df <- data.frame(name = rep(player, nrow(df)), df)
-}
-
-nfl_player <- function(player){
-  url <- "https://www.pro-football-reference.com"
-  s <- access_page(url, player)
-
-  #Data cleaning
-  df <-
-    s %>%
-    xml2::read_html(.) %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.) %>%
-    as.tibble(.) %>%
-    .[grep("[0-9]{4}", .$Year), ]
-
-
-  #Checks if player has team stats too (only if he's been traded)
-  if(length(grep("season", df$Year)) > 0){
-    df <- df %>%
-      .[-grep("season", .$Year), ]
-  }
-  df <- suppressWarnings(separate(df, QBrec, c("W","L","Ties"), sep = "-"))
-  #In case QBrec is '0'
-  df$W[is.na(df$W)] <- 0
-  df$Ties[is.na(df$Ties)] <- 0
-
-  df$Name <- rep(player, nrow(df))
-  df$Year <- stringr::str_extract(df$Year, "[0-9]*")
-
-  df
-}
-
-nhl_player <- function(player){
-  url <- "https://www.hockey-reference.com"
-  s <- access_page(url, player)
-
-  #Data cleaning
-  df <-
-    s %>%
-    xml2::read_html(.) %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.) %>%
-    as.tibble(.)
-  c_names <- df[1, ]
-  c_names[9] <- "PM"
-  c_names[11:14] <- paste("G", df[1, 11:14], sep = "_")
-  c_names[15:17] <- paste("A", df[1, 15:17], sep = "_")
-  names(df) <- c_names
-  if(grep("Awards", names(df)))
-    df <- df[, -grep("Awards", names(df))]
-
-  df <-
-    df %>%
-    filter(., Season != "Career") %>%
-    .[-1, ]
-  #Checks if player has team stats too (only if he's been traded)
-  if(length(grep("season", df$Season))> 0){
-    df <- df %>%
-      .[-grep("season", .$Season), ]
-  }
-
-  df$Name <- rep(player, nrow(df))
-  df
-}
-
-mlb_player <- function(player, advanced){
-  url <- "https://www.baseball-reference.com"
-  s <- access_page(url, player)
-
-  #Data cleaning
-  if(!advanced){
-    df <-
-      s %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill=T) %>%
-      as.data.frame(.) %>%
-      as.tibble(.) %>%
-      dplyr::select(., -Awards) %>%
-      dplyr::filter(., stringr::str_detect(Year, "[0-9]{4}"))
-  } else {
-    df <-
-      s %>% xml2::read_html(.) %>%
-      rvest::html_nodes(., xpath = "//comment()") %>%
-      rvest::html_text(.) %>%
-      paste(., collapse = "") %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill = T) %>%
-      .[[1]] %>%
-      tibble::as_tibble(.) %>%
-      .[grep("[0-9]{4}", .$Year), ] %>%
-      dplyr::select(., -Awards)
-  }
-
-  df$Name <- rep(player, nrow(df))
-  df
-}
-
-cbb_player <- function(player, advanced){
-  url <- "https://www.sports-reference.com/cbb"
-  s <- access_page(url, player)
-
-  #Data cleaning
-  if(!advanced){
-    df <-
-      s %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill=T) %>%
-      as.data.frame(.) %>%
-      tibble::as_tibble(.) %>%
-      dplyr::filter(., Season != "Career")
-  } else {
-    df <-
-      s %>% read_html(.) %>%
+      page %>%
+      read_html(.) %>%
       rvest::html_nodes(., xpath = "//comment()") %>%
       rvest::html_text(.) %>%
       paste(., collapse = "") %>%
       xml2::read_html(.) %>%
       rvest::html_table(., fill = T)
-    #Extract list element that contains advanced stats
+    # Select advanced data frame from list of all tables on page
+    df <- df[sapply(df, function(x) {"PER" %in% names(x)}, simplify = "vector")][[1]]
+  }
+
+  # Data cleaning: Remove empty col, summary rows, add name
+  df <- df[!(colSums(is.na(df)) == nrow(df))]
+  df <- df[str_detect(df$Season, "[0-9]*-[0-9]*"), ]
+  df <- data.frame(Name = rep(player, nrow(df)), df)
+}
+
+nfl_player <- function(player){
+  url <- "https://www.pro-football-reference.com"
+  page <- access_page(url, player)
+
+  # Data Collection
+  df <-
+    page %>%
+    xml2::read_html(.) %>%
+    rvest::html_table(., fill=T) %>%
+    .[[2]]
+
+  # Data Cleaining
+  if(names(df)[1] == ""){
+    # Need to fix variable names
+    names <- numeric(ncol(df))
+    for(i in 1:ncol(df)){
+      if(names(df)[i] == ""){
+        names[i] <- df[1, i]
+        next
+      }
+      names[i] <- paste(names(df)[i],df[1, i], sep = "_")
+    }
+    names(df) <- names
+  }
+  df <- df[!stringr::str_detect(df$Year, "[a-zA-Z]"), ]
+  df$Year <- stringr::str_extract(df$Year, "[0-9]*")
+  df$Pos <- toupper(df$Pos)
+  df <- data.frame(Name = rep(player, nrow(df)), df)
+}
+
+nhl_player <- function(player){
+  url <- "https://www.hockey-reference.com"
+  page <- access_page(url, player)
+
+  # Data Collection
+  df <-
+    page %>%
+    xml2::read_html(.) %>%
+    rvest::html_table(., fill=T) %>%
+    .[[2]]
+
+  # Data Cleaning
+
+  # Fix variable names
+  names <- numeric(ncol(df))
+  for(i in 1:ncol(df)){
+    if(names(df)[i] == ""){
+      names[i] <- df[1, i]
+      next
+    }
+    names[i] <- paste(names(df)[i],df[1, i], sep = "_")
+  }
+  names(df) <- names
+  df <- df[stringr::str_detect(df[, 1], "[0-9]*-[0-9]*"), ]
+  if("Awards" %in% names(df)){
     df <-
       df %>%
-      lapply(., function(x){
-        if("WS" %in% names(x)){
-          x
-        } else {
-          x <- NULL
-        }
-        x
-      })
-    df <-
-      df[sapply(df, function(x){!is.null(x)})] %>%
-      .[[1]] %>%
-      .[, grep("[a-zA-Z]", names(.))] %>%
-      tibble::as_tibble(.) %>%
-      dplyr::filter(., Season != "Career")
-  }
-  #Checks if player has team stats too (only if he's been traded)
-  if(length(grep("season", df$Season))> 0){
-    df <- df %>%
-      .[-grep("season", .$Season), ]
+      dplyr::select(., -Awards)
   }
   df <- data.frame(Name = rep(player, nrow(df)), df)
-  df
+}
+
+mlb_player <- function(player, advanced){
+  url <- "https://www.baseball-reference.com"
+  page <- access_page(url, player)
+
+  # Data Colleciton
+  if(!advanced){
+    df <-
+      page %>%
+      xml2::read_html(.) %>%
+      rvest::html_table(., fill=T) %>%
+      as.data.frame(.)
+  } else {
+    df <-
+      page %>%
+      xml2::read_html(.) %>%
+      rvest::html_nodes(., xpath = "//comment()") %>%
+      rvest::html_text(.) %>%
+      paste(., collapse = "") %>%
+      xml2::read_html(.) %>%
+      rvest::html_table(., fill = T)
+    df <- df[sapply(df, function(x) "Salary" %in% names(x), simplify = "vector")][[1]]
+  }
+
+  # Data Cleaning
+  df <- df[!stringr::str_detect(df$Year, "[a-zA-Z]"), ]
+  if("Awards" %in% names(df)){
+    df <-
+      df %>%
+      dplyr::select(., -Awards)
+  }
+
+  df <- data.frame(Name = rep(player, nrow(df)), df)
+}
+
+cbb_player <- function(player, advanced){
+  url <- "https://www.sports-reference.com/cbb"
+  page <- access_page(url, player)
+
+  # Data Collection
+  if(!advanced){
+    df <-
+      page %>%
+      xml2::read_html(.) %>%
+      rvest::html_table(., fill=T) %>%
+      as.data.frame(.)
+  } else {
+    df <-
+      page %>%
+      xml2::read_html(.) %>%
+      rvest::html_nodes(., xpath = "//comment()") %>%
+      rvest::html_text(.) %>%
+      paste(., collapse = "") %>%
+      xml2::read_html(.) %>%
+      rvest::html_table(., fill = T)
+    # Extract list element that contains advanced stats
+    df <- df[sapply(df, function(x) "WS" %in% names(x), simplify = "vector")][[1]]
+  }
+
+  # Data Cleaning
+  df <- df[stringr::str_detect(df$Season, "[0-9]*-[0-9]*"),]
+  df <- df[!(colSums(is.na(df)) == nrow(df))]
+  if("Awards" %in% names(df)){
+    df <-
+      df %>%
+      dplyr::select(., -Awards)
+  }
+
+  df <- data.frame(Name = rep(player, nrow(df)), df)
 }
