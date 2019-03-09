@@ -1,21 +1,21 @@
 Package: sportscraper
 Type: Package
-Title: Scrape sports data from Sports-Reference
+Title: Scrape Sports Data from Sports-Reference
 Version: 0.0.0.9000
-Author: Kevin MacDonald
-Maintainer: The package maintainer <yourself@somewhere.net>
+Authors@R: person("Kevin", "MacDonald", email = "kevinemacdonald@gmail.com",
+  role = c("aut", "cre"))
 Description: Provides functions for scraping data from affiliate sites
     of Sports-Reference.com to acqure data from the following leagues:
     NBA, MLB, NFL, NHL, CBB.
 Depends:
   R(>= 3.4)
 Imports:
-  rvest,
-  dplyr,
-  stringr,
-  xml2
+    rvest,
+    dplyr,
+    magrittr,
+    xml2,
+    stringr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
-Suggests: testthat

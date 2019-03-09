@@ -2,7 +2,7 @@
 % Please edit documentation in R/player.R
 \name{player_stats}
 \alias{player_stats}
-\title{Player PG Stats}
+\title{Player Per Game Stats}
 \usage{
 player_stats(player, league, advanced = F)
 }
@@ -28,5 +28,8 @@ Returns a data frame containing the career per game stats by season. Description
 Scrape the career per game statistics for a given player
 }
 \examples{
+\dontrun{
    df <- player_stats("Kobe Bryant", "NBA")
+   df <- player_stats("Mike Trout", "MLB", advanced = T)
+}
 }

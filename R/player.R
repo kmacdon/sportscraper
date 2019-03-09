@@ -1,4 +1,4 @@
-#' Player PG Stats
+#' Player Per Game Stats
 #'
 #' Scrape the career per game statistics for a given player
 #' @param player A string containing the player's full name
@@ -15,7 +15,10 @@
 #'     }
 #'
 #' @examples
+#' \dontrun{
 #'    df <- player_stats("Kobe Bryant", "NBA")
+#'    df <- player_stats("Mike Trout", "MLB", advanced = T)
+#' }
 #' @export
 player_stats <- function(player, league, advanced = F){
   if(league == "NBA"){
@@ -49,8 +52,9 @@ access_page <- function(url, search){
   # This checks if search goes directly to player page or search page
   # search page ends in '=', players page ends in 'html'
   if(stringr::str_sub(s$url, nchar(s$url), -1) == "="){
-    if(class(tryCatch(rvest::follow_link(s, search))) == "try-error"){
-      stop(paste("No ", search, "in database."))
+    test <- tryCatch(rvest::follow_link(s, search), error = function(e) e)
+    if(inherits(test, "error")){
+      stop(paste("No player named \'", search, "\' in database.", sep =""))
     }
     # Figure out how many players show up in search results
     text <-
@@ -117,7 +121,7 @@ nba_player <- function(player, advanced){
 
   # Data cleaning: Remove empty col, summary rows, add name
   df <- df[!(colSums(is.na(df)) == nrow(df))]
-  df <- df[str_detect(df$Season, "[0-9]*-[0-9]*"), ]
+  df <- df[stringr::str_detect(df$Season, "[0-9]*-[0-9]*"), ]
   df <- data.frame(Name = rep(player, nrow(df)), df)
 }
 

@@ -11,10 +11,10 @@ team_stats(team, league, defensive = F)
 
 \item{league}{A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'}
 
-\item{defensive}{Whether to return defensive stats or offensive}
+\item{defensive}{Whether to return defensive stats or offensive. Only applys for NBA and MLB teams}
 }
 \value{
-A tibble containing seasonal data for the team. Both offensive
+A data frame containing seasonal data for the team. Both offensive
     and defensive return the same set of advanced statistics for the
     season and then the rest are their respective statistics.
 }
