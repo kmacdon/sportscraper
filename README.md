@@ -1,20 +1,17 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-sportscraper
-============
+
+## sportscraper
 
 This package provides a set of simple yet convinient functions for
 scraping sports data for the NBA, MLB, NFL, and NHL for players, teams,
 and seasons.
 
-Installation
-------------
+## Installation
 
 ``` r
 devtools::install_github("kmacdon/sportscraper")
 ```
 
-Usage
------
+## Usage
 
 This package provides three functions for scraping data one each for
 players, teams and seasons.

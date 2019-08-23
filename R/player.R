@@ -17,7 +17,7 @@
 #' @examples
 #' \dontrun{
 #'    df <- player_stats("Kobe Bryant", "NBA")
-#'    df <- player_stats("Mike Trout", "MLB", advanced = T)
+#'    df <- player_stats("Mike Trout", "MLB", advanced = TRUE)
 #' }
 #' @export
 player_stats <- function(player, league, advanced = F){
