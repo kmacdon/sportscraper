@@ -136,6 +136,24 @@ nfl_player <- function(player){
     rvest::html_table(., fill=T) %>%
     .[[2]]
 
+  # QBs have differently structured DFs
+  if(any(df$Pos == "QB")){
+    names(df)[which(names(df) == "Yds")[2]] <- "Yds_L"
+    df$Year <- stringr::str_remove_all(df$Year, "[\\*+]")
+    
+    df <- df[!stringr::str_detect(df$Year, "[a-z]")]
+    df <- 
+      suppressWarnings(df %>% tidyr::separate("QBrec", c("W", "L", "Tie"), sep="-"))
+    
+    df <- 
+      suppressWarnings(df %>% 
+      mutate_if(function(x){any(stringr::str_detect(x, "[0-9]"))},
+                function(x){as.numeric(x)}))
+    
+    df[is.na(df)] <- 0
+    return(df)
+  }
+  
   # Data Cleaining
   if(names(df)[1] == ""){
     # Need to fix variable names
