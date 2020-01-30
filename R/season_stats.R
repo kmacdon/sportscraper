@@ -35,7 +35,31 @@ access_season_page <- function(url, search){
 
 nba_season <- function(year){
   url <- "https://www.basketball-reference.com"
-  page <- access_team_page(url, year)
+  page <- access_season_page(url, year)
   
+  # Can only get standings right now
+  df <- 
+    page %>% 
+    xml2::read_html(.) %>% 
+    rvest::html_table(.)
+  
+  east <- 
+    df[[1]] %>% 
+    dplyr::mutate(Team = stringr::str_remove_all(`Eastern Conference`, "([\\(0-9\\)]|[\\*\\(\\)\\[\\]])"),
+           Conference = rep("Eastern", nrow(df[[1]]))) %>% 
+    dplyr::select(., Conference, Team, W:SRS)
+
+  west <- 
+    df[[2]] %>% 
+    dplyr::mutate(Team = stringr::str_remove_all(`Western Conference`, "([\\(0-9\\)]|[\\*\\(\\)\\[\\]])"),
+           Conference = rep("Western", nrow(df[[2]]))) %>% 
+    dplyr::select(., Conference, Team, W:SRS)
+  
+  df <- rbind(east, west)
+  df$GB <- suppressWarnings(df$GB)
+  df$GB[is.na(df$GB)] <- 0
+    
+  df
 }
+
 
