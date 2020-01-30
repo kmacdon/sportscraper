@@ -13,6 +13,9 @@ team_stats <- function(team, league, defensive = F){
   if(league == "NBA"){
     df <- nba_team(team, defensive)
   } else if (league == "NHL"){
+    if(defensive){
+      warning("defensive has no use with NHL")
+    }
     df <- nhl_team(team)
   } else if (league == "MLB"){
     df <- mlb_team(team, defensive)

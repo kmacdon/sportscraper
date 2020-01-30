@@ -109,7 +109,7 @@ nba_player <- function(player, advanced){
   } else {
     df <-
       page %>%
-      read_html(.) %>%
+      xml2::read_html(.) %>%
       rvest::html_nodes(., xpath = "//comment()") %>%
       rvest::html_text(.) %>%
       paste(., collapse = "") %>%
