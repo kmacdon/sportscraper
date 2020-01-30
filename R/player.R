@@ -54,7 +54,7 @@ access_page <- function(url, search){
   if(stringr::str_sub(s$url, nchar(s$url), -1) == "="){
     test <- tryCatch(rvest::follow_link(s, search), error = function(e) e)
     if(inherits(test, "error")){
-      stop(paste("No player named \'", search, "\' in database.", sep =""))
+      stop(paste0("No player named \'", search, "\' in database."))
     }
     # Figure out how many players show up in search results
     text <-
