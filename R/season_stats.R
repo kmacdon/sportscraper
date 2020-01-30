@@ -56,6 +56,8 @@ nba_season <- function(year){
     dplyr::select(., Conference, Team, W:SRS)
   
   df <- rbind(east, west)
+  
+  # Clean games back
   df$GB <- suppressWarnings(df$GB)
   df$GB[is.na(df$GB)] <- 0
     
