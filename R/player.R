@@ -32,7 +32,7 @@ player_stats <- function(player, league, advanced = F){
   } else if (league == "CBB"){
     df <- cbb_player(player, advanced)
   } else {
-    stop("Error: league not recognized")
+    stop(paste("Error: league ", "'", league,"'"," not recognized", sep=""))
   }
   df
 }

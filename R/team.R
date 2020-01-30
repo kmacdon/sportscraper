@@ -17,7 +17,7 @@ team_stats <- function(team, league, defensive = F){
   } else if (league == "MLB"){
     df <- mlb_team(team, defensive)
   } else {
-    stop("Error: league not recognized")
+    stop(paste("Error: league ", "'", league,"'"," not recognized", sep=""))
   }
   df
 }
