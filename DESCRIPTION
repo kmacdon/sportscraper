@@ -14,7 +14,8 @@ Imports:
     dplyr,
     magrittr,
     xml2,
-    stringr
+    stringr,
+    tidyr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
