@@ -151,7 +151,7 @@ nfl_player <- function(player, page){
     
     df <- 
       suppressWarnings(df %>% 
-      mutate_if(function(x){any(stringr::str_detect(x, "[0-9]"))},
+      dplyr::mutate_if(function(x){any(stringr::str_detect(x, "[0-9]"))},
                 function(x){as.numeric(x)}))
     
     df[is.na(df)] <- 0
