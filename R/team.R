@@ -144,7 +144,8 @@ mlb_team <- function(team, page, defensive){
   df2 <-
     df2 %>%
     dplyr::select(., -Lg, -W, -L, -Finish)
-
+  # USE setdiff instead of this select
+  
   if(defensive){
     #should change variable names that this shares with batting statistics
   }
