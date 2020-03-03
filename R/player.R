@@ -50,7 +50,7 @@ access_page <- function(search, league){
                 "CBB" = "https://www.sports-reference.com/cbb")
   
   if(is.null(url)){
-    stop(pate0("league \'", league, "\' not recognized."))
+    stop(paste0("league \'", league, "\' not recognized."))
   }
   
   s <- rvest::html_session(url)
