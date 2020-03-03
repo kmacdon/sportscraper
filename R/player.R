@@ -182,7 +182,7 @@ nhl_player <- function(player, page){
   if("Awards" %in% names(df)){
     df <-
       df %>%
-      dplyr::select(., -Awards)
+      .[, grep("Awards", names(.), invert=TRUE)]
   }
   df <- data.frame(Name = rep(player, nrow(df)), df)
 }
@@ -210,7 +210,7 @@ mlb_player <- function(player, page, advanced){
   if("Awards" %in% names(df)){
     df <-
       df %>%
-      dplyr::select(., -Awards)
+      .[, grep("Awards", names(.), invert=TRUE)]
   }
 
   df <- data.frame(Name = rep(player, nrow(df)), df)
@@ -241,7 +241,7 @@ cbb_player <- function(player, page, advanced){
   if("Awards" %in% names(df)){
     df <-
       df %>%
-      dplyr::select(., -Awards)
+      .[, grep("Awards", names(.), invert=TRUE)]
   }
 
   df <- data.frame(Name = rep(player, nrow(df)), df)
