@@ -30,6 +30,6 @@ Scrape the career per game statistics for a given player
 \examples{
 \dontrun{
    df <- player_stats("Kobe Bryant", "NBA")
-   df <- player_stats("Mike Trout", "MLB", advanced = T)
+   df <- player_stats("Mike Trout", "MLB", advanced = TRUE)
 }
 }

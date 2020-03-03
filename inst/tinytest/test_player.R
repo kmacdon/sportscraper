@@ -3,6 +3,7 @@ load("data/player/kb_adv.RData")
 load("data/player/jm.RData")
 load("data/player/bo.RData")
 load("data/player/dj.RData")
+load("data/player/dj_adv.RData")
 load("data/player/ac.RData")
 load("data/player/ai_adv.RData")
 
