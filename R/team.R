@@ -4,49 +4,74 @@
 #' Scrape the seasonal statistics for a specific team.
 #' @param team A string containing the full name of the team
 #' @param league A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'
-#' @param defensive Whether to return defensive stats or offensive. Only applys for NBA and MLB teams
+#' @param defensive Whether to return defensive stats or offensive. Only applies for NBA and MLB teams
 #' @return A data frame containing seasonal data for the team. Both offensive
 #'     and defensive return the same set of advanced statistics for the
 #'     season and then the rest are their respective statistics.
 #' @export
 team_stats <- function(team, league, defensive = F){
+  page <- access_team_page(team, league)
   if(league == "NBA"){
     df <- nba_team(team, defensive)
   } else if (league == "NHL"){
+    if(defensive){
+      warning("defensive has no use with NHL")
+    }
     df <- nhl_team(team)
   } else if (league == "MLB"){
     df <- mlb_team(team, defensive)
   } else if (league == "NFL"){
     df <- nfl_team(team)
   } else {
-    stop("Error: league not recognized")
+    stop(paste0("Error: league ", "'", league,"'"," not recognized"))
   }
   df
 }
 
 # This function searches for team and navigates to appropriate page
-access_team_page <- function(url, search){
+access_team_page <- function(team, league){
+  url <- switch(toupper(league),
+                "NBA" = "https://www.basketball-reference.com/",
+                "NFL" = "https://www.pro-football-reference.com",
+                "NHL" = "https://www.hockey-reference.com",
+                "MLB" = "https://www.baseball-reference.com")
+  
   s <- rvest::html_session(url)
   f <-
     rvest::html_form(s)[[1]] %>%
-    rvest::set_values(., search=search)
+    rvest::set_values(., search=team)
   s <-
     rvest::submit_form(s,f)$url %>%
     rvest::html_session(.)
   
-  s <- rvest::follow_link(s, search)
-  s
+  if(toupper(league) == "NHL"){
+    # Part time fix until more robust solution is found
+    s <- 
+      s %>% 
+      rvest::follow_link(., team) %>% 
+      rvest::jump_to(., "history.html") %>% 
+      xml2::read_html()
+    return(s)
+  } else if (toupper(league) == "MLB"){
+    # Another stop gap to keep this working for the time being
+    s <- 
+      s %>% 
+      rvest::follow_link(., team)
+    return(s)
+  }
+  
+  s <- 
+    s %>% 
+    rvest::follow_link(., team) %>% 
+    xml2::read_html()
 }
 
 
-nba_team <- function(team, defensive){
-  url <- "https://www.basketball-reference.com/"
-  page <- access_team_page(url, team)
+nba_team <- function(team, page, defensive){
 
   # Data Collection
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
@@ -80,13 +105,10 @@ nba_team <- function(team, defensive){
   df <- df[!(colSums(is.na(df)) == nrow(df))]
 }
 
-nhl_team <- function(team){
-  url <- "https://www.hockey-reference.com"
-  page <- access_team_page(url, team)
+nhl_team <- function(team, page){
 
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
@@ -98,13 +120,11 @@ nhl_team <- function(team){
   df
 }
 
-mlb_team <- function(team, defensive){
-  url <- "https://www.baseball-reference.com"
-  page <- access_team_page(url, team)
+mlb_team <- function(team, page, defensive){
 
   df <-
     page %>%
-    xml2::read_html(.) %>%
+    xml2::read_html() %>% 
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
@@ -126,7 +146,8 @@ mlb_team <- function(team, defensive){
   df2 <-
     df2 %>%
     dplyr::select(., -Lg, -W, -L, -Finish)
-
+  # USE setdiff instead of this select
+  
   if(defensive){
     #should change variable names that this shares with batting statistics
   }
@@ -137,13 +158,11 @@ mlb_team <- function(team, defensive){
   df
 }
 
-nfl_team <- function(team){
-  url <- "https://www.pro-football-reference.com"
-  page <- access_team_page(url, team)
+
+nfl_team <- function(team, page){
   
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
   
@@ -161,13 +180,13 @@ nfl_team <- function(team){
   
   df <- 
     df %>% 
-    mutate_if(., 
+    dplyr::mutate_if(., 
               function(x){
-      !any(stringr::str_detect(x, "[a-zA-Z]"))
-      }, 
-      function(x){
-        as.numeric(x)
-        })
+                !any(stringr::str_detect(x, "[a-zA-Z]"))
+              }, 
+              function(x){
+                as.numeric(x)
+              })
   
   df$Tm <- stringr::str_remove_all(df$Tm, "[\\*]")
   df$`Div. Finish` <- as.numeric(stringr::str_sub(df$`Div. Finish`, end=1))
