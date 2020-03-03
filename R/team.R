@@ -26,15 +26,18 @@ team_stats <- function(team, league, defensive = F){
 }
 
 # This function searches for team and navigates to appropriate page
-access_team_page <- function(url, search){
+access_team_page <- function(url, search_string){
   s <- rvest::html_session(url)
   f <-
     rvest::html_form(s)[[1]] %>%
-    rvest::set_values(., search=search)
+    rvest::set_values(., search=search_string)
   s <-
     rvest::submit_form(s,f)$url %>%
     rvest::html_session(.)
-  s <- rvest::follow_link(s, search)
+  s <- 
+    s %>% 
+    rvest::follow_link(., search_string) %>% 
+    rvest::follow_link("history")
 }
 
 
