@@ -50,6 +50,12 @@ access_team_page <- function(team, league){
       rvest::jump_to(., "history.html") %>% 
       xml2::read_html()
     return(s)
+  } else if (toupper(league) == "MLB"){
+    # Another stop gap to keep this working for the time being
+    s <- 
+      s %>% 
+      rvest::follow_link(., team)
+    return(s)
   }
   
   s <- 
@@ -116,6 +122,7 @@ mlb_team <- function(team, page, defensive){
 
   df <-
     page %>%
+    xml2::read_html() %>% 
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
