@@ -21,16 +21,17 @@
 #' }
 #' @export
 player_stats <- function(player, league, advanced = F){
+  page <- access_page(player, league)
   if(league == "NBA"){
-    df <- nba_player(player, advanced)
+    df <- nba_player(player, page, advanced)
   } else if (league == "NFL"){
-    df <- nfl_player(player)
+    df <- nfl_player(player, page)
   } else if (league == "NHL"){
     df <- nhl_player(player)
   } else if (league == "MLB"){
-    df <- mlb_player(player, advanced)
+    df <- mlb_player(player, page, advanced)
   } else if (league == "CBB"){
-    df <- cbb_player(player, advanced)
+    df <- cbb_player(player, page, advanced)
   } else {
     stop(paste("Error: league ", "'", league,"'"," not recognized", sep=""))
   }
@@ -40,8 +41,20 @@ player_stats <- function(player, league, advanced = F){
 #' @importFrom magrittr "%>%"
 
 # This function searches for player and navigates to appropriate page
-access_page <- function(url, search){
+access_page <- function(search, league){
+  url <- switch(toupper(league),
+                "NBA" = "https://www.basketball-reference.com/",
+                "NFL" = "https://www.pro-football-reference.com",
+                "NHL" = "https://www.hockey-reference.com",
+                "MLB" = "https://www.baseball-reference.com",
+                "CBB" = "https://www.sports-reference.com/cbb")
+  
+  if(is.null(url)){
+    stop(pate0("league \'", league, "\' not recognized."))
+  }
+  
   s <- rvest::html_session(url)
+  
   f <-
     rvest::html_form(s)[[1]] %>%
     rvest::set_values(., search=search)
@@ -92,24 +105,19 @@ access_page <- function(url, search){
     }
 
   }
-  s
+  xml2::read_html(s)
 }
 
-nba_player <- function(player, advanced){
-  url <- "https://www.basketball-reference.com/"
-  page <- access_page(url, player)
-
+nba_player <- function(player, page, advanced){
   # Data collection
   if(!advanced){
     df <-
       page %>%
-      xml2::read_html(.) %>%
       rvest::html_table(., fill=T) %>%
       as.data.frame(.)
   } else {
     df <-
       page %>%
-      xml2::read_html(.) %>%
       rvest::html_nodes(., xpath = "//comment()") %>%
       rvest::html_text(.) %>%
       paste(., collapse = "") %>%
@@ -125,16 +133,12 @@ nba_player <- function(player, advanced){
   df <- data.frame(Name = rep(player, nrow(df)), df)
 }
 
-nfl_player <- function(player){
-  url <- "https://www.pro-football-reference.com"
-  page <- access_page(url, player)
-
+nfl_player <- function(player, page){
   # Data Collection
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
-    .[[2]]
+    .[[1]]
 
   # Data Cleaining
   if(names(df)[1] == ""){
@@ -155,16 +159,12 @@ nfl_player <- function(player){
   df <- data.frame(Name = rep(player, nrow(df)), df)
 }
 
-nhl_player <- function(player){
-  url <- "https://www.hockey-reference.com"
-  page <- access_page(url, player)
-
+nhl_player <- function(player, page){
   # Data Collection
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
-    .[[2]]
+    .[[1]]
 
   # Data Cleaning
 
@@ -187,21 +187,16 @@ nhl_player <- function(player){
   df <- data.frame(Name = rep(player, nrow(df)), df)
 }
 
-mlb_player <- function(player, advanced){
-  url <- "https://www.baseball-reference.com"
-  page <- access_page(url, player)
-
+mlb_player <- function(player, page, advanced){
   # Data Colleciton
   if(!advanced){
     df <-
       page %>%
-      xml2::read_html(.) %>%
       rvest::html_table(., fill=T) %>%
       as.data.frame(.)
   } else {
     df <-
       page %>%
-      xml2::read_html(.) %>%
       rvest::html_nodes(., xpath = "//comment()") %>%
       rvest::html_text(.) %>%
       paste(., collapse = "") %>%
@@ -221,21 +216,16 @@ mlb_player <- function(player, advanced){
   df <- data.frame(Name = rep(player, nrow(df)), df)
 }
 
-cbb_player <- function(player, advanced){
-  url <- "https://www.sports-reference.com/cbb"
-  page <- access_page(url, player)
-
+cbb_player <- function(player, page, advanced){
   # Data Collection
   if(!advanced){
     df <-
       page %>%
-      xml2::read_html(.) %>%
       rvest::html_table(., fill=T) %>%
       as.data.frame(.)
   } else {
     df <-
       page %>%
-      xml2::read_html(.) %>%
       rvest::html_nodes(., xpath = "//comment()") %>%
       rvest::html_text(.) %>%
       paste(., collapse = "") %>%

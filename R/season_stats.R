@@ -6,7 +6,7 @@
 #' @param defensive Whether to return defensive stats or offensive. Only applys for NBA and MLB teams
 #' @return A data frame containing seasonal data for the league and year specified.
 #' @export
-season_stats(year, league){
+season_stats <- function(year, league){
   if(league == "NBA"){
     df <- nba_season(year, defensive)
   } else if (league == "NHL"){
