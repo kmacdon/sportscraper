@@ -41,6 +41,17 @@ access_team_page <- function(team, league){
   s <-
     rvest::submit_form(s,f)$url %>%
     rvest::html_session(.)
+  
+  if(toupper(league) == "NHL"){
+    # Part time fix until more robust solution is found
+    s <- 
+      s %>% 
+      rvest::follow_link(., team) %>% 
+      rvest::jump_to(., "history.html") %>% 
+      xml2::read_html()
+    return(s)
+  }
+  
   s <- 
     s %>% 
     rvest::follow_link(., team) %>% 
