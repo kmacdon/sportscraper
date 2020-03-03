@@ -138,3 +138,42 @@ mlb_team <- function(team, defensive){
 
   df
 }
+
+
+nfl_team <- function(team){
+  url <- "https://www.pro-football-reference.com"
+  page <- access_team_page(url, team)
+  
+  df <-
+    page %>%
+    xml2::read_html(.) %>%
+    rvest::html_table(., fill=T) %>%
+    as.data.frame(.)
+  
+  # Cleaning
+  col_names <- df[1, ]
+  col_names[stringr::str_detect(names(df), "Players")] <- paste0("Top_", col_names[stringr::str_detect(names(df), "Players")])
+  col_names[stringr::str_detect(names(df), "Off")] <- paste0("Off_", col_names[stringr::str_detect(names(df), "Off")])
+  col_names[stringr::str_detect(col_names, "out of")] <- "Team_Count"
+  
+  names(df) <- col_names
+  df <- df[-1, ]
+  
+  # remove rows that only have text
+  df <- df[apply(df, 1, function(x){any(stringr::str_detect(x, "[0-9]"))}), ]
+  
+  df <- 
+    df %>% 
+    mutate_if(., 
+              function(x){
+                !any(stringr::str_detect(x, "[a-zA-Z]"))
+              }, 
+              function(x){
+                as.numeric(x)
+              })
+  
+  df$Tm <- stringr::str_remove_all(df$Tm, "[\\*]")
+  df$`Div. Finish` <- as.numeric(stringr::str_sub(df$`Div. Finish`, end=1))
+  
+  df
+}
