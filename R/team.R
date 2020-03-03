@@ -10,6 +10,7 @@
 #'     season and then the rest are their respective statistics.
 #' @export
 team_stats <- function(team, league, defensive = F){
+  page <- access_team_page(team, league)
   if(league == "NBA"){
     df <- nba_team(team, defensive)
   } else if (league == "NHL"){
@@ -26,29 +27,32 @@ team_stats <- function(team, league, defensive = F){
 }
 
 # This function searches for team and navigates to appropriate page
-access_team_page <- function(url, search_string){
+access_team_page <- function(team, league){
+  url <- switch(toupper(league),
+                "NBA" = "https://www.basketball-reference.com/",
+                "NFL" = "https://www.pro-football-reference.com",
+                "NHL" = "https://www.hockey-reference.com",
+                "MLB" = "https://www.baseball-reference.com")
+  
   s <- rvest::html_session(url)
   f <-
     rvest::html_form(s)[[1]] %>%
-    rvest::set_values(., search=search_string)
+    rvest::set_values(., search=team)
   s <-
     rvest::submit_form(s,f)$url %>%
     rvest::html_session(.)
   s <- 
     s %>% 
-    rvest::follow_link(., search_string) %>% 
-    rvest::follow_link("history")
+    rvest::follow_link(., team) %>% 
+    xml2::read_html()
 }
 
 
-nba_team <- function(team, defensive){
-  url <- "https://www.basketball-reference.com/"
-  page <- access_team_page(url, team)
+nba_team <- function(team, page, defensive){
 
   # Data Collection
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
@@ -82,13 +86,10 @@ nba_team <- function(team, defensive){
   df <- df[!(colSums(is.na(df)) == nrow(df))]
 }
 
-nhl_team <- function(team){
-  url <- "https://www.hockey-reference.com"
-  page <- access_team_page(url, team)
+nhl_team <- function(team, page){
 
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
@@ -100,13 +101,10 @@ nhl_team <- function(team){
   df
 }
 
-mlb_team <- function(team, defensive){
-  url <- "https://www.baseball-reference.com"
-  page <- access_team_page(url, team)
+mlb_team <- function(team, page, defensive){
 
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
 
@@ -140,13 +138,10 @@ mlb_team <- function(team, defensive){
 }
 
 
-nfl_team <- function(team){
-  url <- "https://www.pro-football-reference.com"
-  page <- access_team_page(url, team)
+nfl_team <- function(team, page){
   
   df <-
     page %>%
-    xml2::read_html(.) %>%
     rvest::html_table(., fill=T) %>%
     as.data.frame(.)
   
@@ -164,7 +159,7 @@ nfl_team <- function(team){
   
   df <- 
     df %>% 
-    mutate_if(., 
+    dplyr::mutate_if(., 
               function(x){
                 !any(stringr::str_detect(x, "[a-zA-Z]"))
               }, 
