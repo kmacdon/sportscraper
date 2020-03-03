@@ -7,9 +7,9 @@ Authors@R: person("Kevin", "MacDonald", email = "kevinemacdonald@gmail.com",
 Description: Provides functions for scraping data from affiliate sites
     of Sports-Reference.com to acqure data from the following leagues:
     NBA, MLB, NFL, NHL, CBB.
-Depends:
+Depends: 
   R(>= 3.4)
-Imports:
+Imports: 
     rvest,
     dplyr,
     magrittr,
@@ -19,3 +19,4 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
+Suggests: tinytest
