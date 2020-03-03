@@ -4,7 +4,7 @@
 #' Scrape the seasonal statistics for a specific team.
 #' @param team A string containing the full name of the team
 #' @param league A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'
-#' @param defensive Whether to return defensive stats or offensive. Only applys for NBA and MLB teams
+#' @param defensive Whether to return defensive stats or offensive. Only applies for NBA and MLB teams
 #' @return A data frame containing seasonal data for the team. Both offensive
 #'     and defensive return the same set of advanced statistics for the
 #'     season and then the rest are their respective statistics.
