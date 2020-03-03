@@ -1,12 +1,16 @@
 #' Scrape Season Stats
 #'
 #' Scrape the seasonal statistics for a specific league and year
-#' @param team A year to get statistics for. For season that occur across two years, use the first.
+#' @param year A year to get statistics for. For seasons that occur across two years, use the first.
 #' @param league A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'
-#' @param defensive Whether to return defensive stats or offensive. Only applys for NBA and MLB teams
+#' @param defensive Default is FALSE. Controsl whether to return defensive stats or offensive. Only applys for NBA and MLB teams
 #' @return A data frame containing seasonal data for the league and year specified.
+#' @examples
+#' \dontrun{
+#'    df <- season_stats("Boston Celtics", "NBA")
+#' }
 #' @export
-season_stats <- function(year, league){
+season_stats <- function(year, league, defensive = FALSE){
   if(league == "NBA"){
     df <- nba_season(year, defensive)
   } else if (league == "NHL"){

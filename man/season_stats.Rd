@@ -4,18 +4,23 @@
 \alias{season_stats}
 \title{Scrape Season Stats}
 \usage{
-season_stats(year, league)
+season_stats(year, league, defensive = FALSE)
 }
 \arguments{
+\item{year}{A year to get statistics for. For seasons that occur across two years, use the first.}
+
 \item{league}{A string containing the league to search. One of: 'NFL', 'NBA', 'NHL', 'MLB'}
 
-\item{team}{A year to get statistics for. For season that occur across two years, use the first.}
-
-\item{defensive}{Whether to return defensive stats or offensive. Only applys for NBA and MLB teams}
+\item{defensive}{Default is FALSE. Controsl whether to return defensive stats or offensive. Only applys for NBA and MLB teams}
 }
 \value{
 A data frame containing seasonal data for the league and year specified.
 }
 \description{
 Scrape the seasonal statistics for a specific league and year
+}
+\examples{
+\dontrun{
+   df <- season_stats("Boston Celtics", "NBA")
+}
 }
