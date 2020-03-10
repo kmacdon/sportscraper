@@ -57,36 +57,37 @@ access_page <- function(search, league){
   
   f <-
     rvest::html_form(s)[[1]] %>%
-    rvest::set_values(., search=search)
+    rvest::set_values( search=search)
   s <-
     rvest::submit_form(s,f)$url %>%
-    rvest::html_session(.)
+    rvest::html_session()
 
   # This checks if search goes directly to player page or search page
   # search page ends in '=', players page ends in 'html'
   if(stringr::str_sub(s$url, nchar(s$url), -1) == "="){
-    test <- tryCatch(rvest::follow_link(s, search), error = function(e) e)
-    if(inherits(test, "error")){
-      stop(paste0("No player named \'", search, "\' in database."))
-    }
+    test <- tryCatch(rvest::follow_link(s, search), 
+                     error = function(e) {
+                       stop(paste0("No player named \'", search, "\' in database."))
+                     })
+
     # Figure out how many players show up in search results
     text <-
       s %>%
-      xml2::read_html(.) %>%
-      rvest::html_text(.)
+      xml2::read_html() %>%
+      rvest::html_text()
     choices <-
       text %>%
-      stringr::str_extract_all(., paste(search, ".*?\\n")) %>%
-      lapply(., stringr::str_remove, pattern = "\\n") %>%
-      unlist(.)
+      stringr::str_extract_all( paste(search, ".*?\\n")) %>%
+      lapply( stringr::str_remove, pattern = "\\n") %>%
+      unlist()
     if(length(choices) > 1){
       # Present option to select player based on years played
       print("Multiple players with that name")
       links <-
         text %>%
-        stringr::str_extract_all(., "/players.*\\n") %>%
-        unlist(.) %>%
-        stringr::str_remove(., "\\n")
+        stringr::str_extract_all( "/players.*\\n") %>%
+        unlist() %>%
+        stringr::str_remove( "\\n")
       links <- paste(url, links, sep = "")
 
       print(choices)
@@ -113,16 +114,16 @@ nba_player <- function(player, page, advanced){
   if(!advanced){
     df <-
       page %>%
-      rvest::html_table(., fill=T) %>%
-      as.data.frame(.)
+      rvest::html_table( fill=T) %>%
+      as.data.frame()
   } else {
     df <-
       page %>%
-      rvest::html_nodes(., xpath = "//comment()") %>%
-      rvest::html_text(.) %>%
-      paste(., collapse = "") %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill = T)
+      rvest::html_nodes( xpath = "//comment()") %>%
+      rvest::html_text() %>%
+      paste( collapse = "") %>%
+      xml2::read_html() %>%
+      rvest::html_table( fill = T)
     # Select advanced data frame from list of all tables on page
     df <- df[sapply(df, function(x) {"PER" %in% names(x)}, simplify = "vector")][[1]]
   }
@@ -137,7 +138,7 @@ nfl_player <- function(player, page){
   # Data Collection
   df <-
     page %>%
-    rvest::html_table(., fill=T) %>%
+    rvest::html_table( fill=T) %>%
     .[[1]]
 
   # QBs have differently structured DFs
@@ -181,7 +182,7 @@ nhl_player <- function(player, page){
   # Data Collection
   df <-
     page %>%
-    rvest::html_table(., fill=T) %>%
+    rvest::html_table( fill=T) %>%
     .[[1]]
 
   # Data Cleaning
@@ -210,16 +211,16 @@ mlb_player <- function(player, page, advanced){
   if(!advanced){
     df <-
       page %>%
-      rvest::html_table(., fill=T) %>%
-      as.data.frame(.)
+      rvest::html_table( fill=T) %>%
+      as.data.frame()
   } else {
     df <-
       page %>%
-      rvest::html_nodes(., xpath = "//comment()") %>%
-      rvest::html_text(.) %>%
-      paste(., collapse = "") %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill = T)
+      rvest::html_nodes( xpath = "//comment()") %>%
+      rvest::html_text() %>%
+      paste( collapse = "") %>%
+      xml2::read_html() %>%
+      rvest::html_table( fill = T)
     df <- df[sapply(df, function(x) "Salary" %in% names(x), simplify = "vector")][[1]]
   }
 
@@ -239,16 +240,16 @@ cbb_player <- function(player, page, advanced){
   if(!advanced){
     df <-
       page %>%
-      rvest::html_table(., fill=T) %>%
-      as.data.frame(.)
+      rvest::html_table( fill=T) %>%
+      as.data.frame()
   } else {
     df <-
       page %>%
-      rvest::html_nodes(., xpath = "//comment()") %>%
-      rvest::html_text(.) %>%
-      paste(., collapse = "") %>%
-      xml2::read_html(.) %>%
-      rvest::html_table(., fill = T)
+      rvest::html_nodes( xpath = "//comment()") %>%
+      rvest::html_text() %>%
+      paste( collapse = "") %>%
+      xml2::read_html() %>%
+      rvest::html_table( fill = T)
     # Extract list element that contains advanced stats
     df <- df[sapply(df, function(x) "WS" %in% names(x), simplify = "vector")][[1]]
   }
