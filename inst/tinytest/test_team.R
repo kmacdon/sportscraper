@@ -1,5 +1,5 @@
-load("data/team/cb.Rdata")
-load("data/team/bb.Rdata")
+load("data/team/cb.RData")
+load("data/team/bb.RData")
 
 expect_equivalent(sportscraper::team_stats("Chicago Bears", "NFL"), 
                   cb)
