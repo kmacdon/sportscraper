@@ -5,3 +5,5 @@
 *.Rmd
 *.Rproj
 *TODO
+*.DS_Store
+.Rbuildignore
