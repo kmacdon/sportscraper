@@ -54,20 +54,24 @@ access_page <- function(search, league){
   }
   
   s <- rvest::html_session(url)
-  
+  old_url <- s$url
   f <-
     rvest::html_form(s)[[1]] %>%
     rvest::set_values( search=search)
   s <-
-    rvest::submit_form(s,f)$url %>%
+    suppressMessages(rvest::submit_form(s,f))$url %>%
     rvest::html_session()
 
+  # make sure that search didn't switch sites
+  if (stringr::str_extract(old_url, "www\\..*\\.com") != stringr::str_extract(s$url, "www\\..*\\.com")){
+    stop(paste0("No player named \'", search, "\' on ", url))
+  }
   # This checks if search goes directly to player page or search page
   # search page ends in '=', players page ends in 'html'
   if(stringr::str_sub(s$url, nchar(s$url), -1) == "="){
     test <- tryCatch(rvest::follow_link(s, search), 
                      error = function(e) {
-                       stop(paste0("No player named \'", search, "\' in database."))
+                       stop(paste0("No player named \'", search, "\' on ", url))
                      })
 
     # Figure out how many players show up in search results
