@@ -137,7 +137,7 @@ nba_player <- function(player, page, advanced){
   # Data cleaning: Remove empty col, summary rows, add name
   df <- df[!(colSums(is.na(df)) == nrow(df))]
   df <- df[stringr::str_detect(df$Season, "[0-9]*-[0-9]*"), ]
-  df <- data.frame(Name = rep(player, nrow(df)), df)
+  df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
 
 nfl_player <- function(player, page){
@@ -181,7 +181,7 @@ nfl_player <- function(player, page){
   df <- df[!stringr::str_detect(df$Year, "[a-zA-Z]"), ]
   df$Year <- stringr::str_extract(df$Year, "[0-9]*")
   df$Pos <- toupper(df$Pos)
-  df <- data.frame(Name = rep(player, nrow(df)), df)
+  df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
 
 nhl_player <- function(player, page){
@@ -209,7 +209,7 @@ nhl_player <- function(player, page){
       df %>%
       .[, grep("Awards", names(.), invert=TRUE)]
   }
-  df <- data.frame(Name = rep(player, nrow(df)), df)
+  df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
 
 mlb_player <- function(player, page, advanced){
@@ -238,7 +238,7 @@ mlb_player <- function(player, page, advanced){
       .[, grep("Awards", names(.), invert=TRUE)]
   }
 
-  df <- data.frame(Name = rep(player, nrow(df)), df)
+  df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
 
 cbb_player <- function(player, page, advanced){
@@ -269,5 +269,5 @@ cbb_player <- function(player, page, advanced){
       .[, grep("Awards", names(.), invert=TRUE)]
   }
 
-  df <- data.frame(Name = rep(player, nrow(df)), df)
+  df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
