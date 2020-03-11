@@ -1,8 +1,8 @@
 load("data/team/cb.Rdata")
-load("data/team/lak.Rdata")
+load("data/team/bb.Rdata")
 
-expect_equivalent(sportscraper:::nfl_team("Chicago Bears", xml2::read_html("data/team/cb.html")), 
+expect_equivalent(sportscraper::team_stats("Chicago Bears", "NFL"), 
                   cb)
 
-expect_equivalent(sportscraper:::nhl_team("Los Angeles Kings", xml2::read_html("data/team/lak.html")), 
-                  lak)
+expect_equivalent(sportscraper::team_stats("Boston Bruins", "NHL"), 
+                  bb)

@@ -27,7 +27,7 @@ player_stats <- function(player, league, advanced = F){
   } else if (league == "NFL"){
     df <- nfl_player(player, page)
   } else if (league == "NHL"){
-    df <- nhl_player(player)
+    df <- nhl_player(player, page)
   } else if (league == "MLB"){
     df <- mlb_player(player, page, advanced)
   } else if (league == "CBB"){
@@ -58,6 +58,8 @@ access_page <- function(search, league){
   f <-
     rvest::html_form(s)[[1]] %>%
     rvest::set_values( search=search)
+  
+  # Get rid of the "Submitting with 'NULL'" message
   s <-
     suppressMessages(rvest::submit_form(s,f))$url %>%
     rvest::html_session()

@@ -12,16 +12,16 @@
 team_stats <- function(team, league, defensive = F){
   page <- access_team_page(team, league)
   if(league == "NBA"){
-    df <- nba_team(team, defensive)
+    df <- nba_team(team, page, defensive)
   } else if (league == "NHL"){
     if(defensive){
       warning("defensive has no use with NHL")
     }
-    df <- nhl_team(team)
+    df <- nhl_team(team, page)
   } else if (league == "MLB"){
-    df <- mlb_team(team, defensive)
+    df <- mlb_team(team, page, defensive)
   } else if (league == "NFL"){
-    df <- nfl_team(team)
+    df <- nfl_team(team, page)
   } else {
     stop(paste0("Error: league ", "'", league,"'"," not recognized"))
   }
@@ -40,8 +40,10 @@ access_team_page <- function(team, league){
   f <-
     rvest::html_form(s)[[1]] %>%
     rvest::set_values(., search=team)
+  
+  # Get rid of the "Submitting with 'NULL'" message
   s <-
-    rvest::submit_form(s,f)$url %>%
+    suppressMessages(rvest::submit_form(s,f)$url) %>%
     rvest::html_session(.)
   
   if(toupper(league) == "NHL"){
