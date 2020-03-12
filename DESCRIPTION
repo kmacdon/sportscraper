@@ -15,7 +15,8 @@ Imports:
     magrittr,
     xml2,
     stringr,
-    tidyr
+    tidyr,
+    covr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
