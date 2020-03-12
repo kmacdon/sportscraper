@@ -5,7 +5,7 @@ Version: 0.0.0.9000
 Authors@R: person("Kevin", "MacDonald", email = "kevinemacdonald@gmail.com",
   role = c("aut", "cre"))
 Description: Provides functions for scraping data from affiliate sites
-    of Sports-Reference.com to acqure data from the following leagues:
+    of Sports-Reference.com to acquire data from the following leagues:
     NBA, MLB, NFL, NHL, CBB.
 Depends: 
   R(>= 3.5)
