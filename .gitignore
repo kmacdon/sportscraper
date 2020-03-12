@@ -6,3 +6,4 @@
 *TODO
 *.DS_Store
 .Rbuildignore
+generate.R
