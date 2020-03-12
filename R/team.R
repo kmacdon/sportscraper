@@ -9,7 +9,7 @@
 #'     and defensive return the same set of advanced statistics for the
 #'     season and then the rest are their respective statistics.
 #' @export
-team_stats <- function(team, league, defensive = F){
+team_data <- function(team, league, defensive = F){
   page <- access_team_page(team, league)
   if(league == "NBA"){
     df <- nba_team(team, page, defensive)

@@ -2,26 +2,26 @@ load("data/player_test_data.RData")
 
 if(at_home()){
   # Test downloading if building locally
-  expect_equivalent(sportscraper::player_stats("Kobe Bryant", "NBA", advanced=FALSE), 
+  expect_equivalent(sportscraper::player_data("Kobe Bryant", "NBA", advanced=FALSE), 
                     player_test_data[["Kobe Bryant"]])
-  expect_equivalent(sportscraper::player_stats("Kobe Bryant", "NBA", advanced=TRUE), 
+  expect_equivalent(sportscraper::player_data("Kobe Bryant", "NBA", advanced=TRUE), 
                     player_test_data[["Kobe Bryant_adv"]])
   
-  expect_equivalent(sportscraper::player_stats("Joe Montana", "NFL"), 
+  expect_equivalent(sportscraper::player_data("Joe Montana", "NFL"), 
                     player_test_data[["Joe Montana"]])
   
-  expect_equivalent(sportscraper::player_stats("Bobby Or", "NHL"), 
+  expect_equivalent(sportscraper::player_data("Bobby Or", "NHL"), 
                     player_test_data[["Bobby Or"]])
   
-  expect_equivalent(sportscraper::player_stats("Derek Jeter", "MLB", advanced=FALSE), 
+  expect_equivalent(sportscraper::player_data("Derek Jeter", "MLB", advanced=FALSE), 
                     player_test_data[["Derek Jeter"]])
-  expect_equivalent(sportscraper::player_stats("Derek Jeter", "MLB", advanced=TRUE), 
+  expect_equivalent(sportscraper::player_data("Derek Jeter", "MLB", advanced=TRUE), 
                     player_test_data[["Derek Jeter_adv"]])
   
-  expect_equivalent(sportscraper::player_stats("Austin Carr", "CBB", advanced=FALSE), 
+  expect_equivalent(sportscraper::player_data("Austin Carr", "CBB", advanced=FALSE), 
                     player_test_data[["Austin Carr"]])
   
-  expect_equivalent(sportscraper::player_stats("Allen Iverson", "CBB", advanced=TRUE), 
+  expect_equivalent(sportscraper::player_data("Allen Iverson", "CBB", advanced=TRUE), 
                     player_test_data[["Allen Iverson_adv"]])
 } else {
   expect_equivalent(sportscraper:::nba_player("Kobe Bryant", xml2::read_html("data/KobeBryant.html"), advanced = FALSE),

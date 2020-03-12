@@ -16,11 +16,11 @@
 #'
 #' @examples
 #' \dontrun{
-#'    df <- player_stats("Kobe Bryant", "NBA")
-#'    df <- player_stats("Mike Trout", "MLB", advanced = TRUE)
+#'    df <- player_data("Kobe Bryant", "NBA")
+#'    df <- player_data("Mike Trout", "MLB", advanced = TRUE)
 #' }
 #' @export
-player_stats <- function(player, league, advanced = F){
+player_data <- function(player, league, advanced = F){
   page <- access_page(player, league)
   if(league == "NBA"){
     df <- nba_player(player, page, advanced)

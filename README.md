@@ -17,7 +17,7 @@ devtools::install_github("kmacdon/sportscraper")
 This package provides two functions for scraping sports data, one for players and one for teams.
 
 ``` r
-df <- player_stats("Kobe Bryant", "NBA")
+df <- player_data("Kobe Bryant", "NBA")
 ```
 
 The player function accepts a player name and league than returns their
@@ -28,7 +28,7 @@ years that each player played, and you will be prompted to select one to
 continue with.
 
 ``` r
-df <- team_stats("Boston Bruins", "NHL")
+df <- team_data("Boston Bruins", "NHL")
 ```
 
 The team function accepts a team and a league and returns the season
