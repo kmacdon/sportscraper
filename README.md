@@ -1,7 +1,10 @@
 
 ## sportscraper
 
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![Build Status](https://travis-ci.com/kmacdon/sportscraper.svg?branch=master)](https://travis-ci.com/kmacdon/sportscraper)
+<!-- badges: end -->
 
 This package provides a set of simple yet convinient functions for
 scraping sports data for the NBA, MLB, NFL, and NHL for players and teams.

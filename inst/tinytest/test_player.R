@@ -47,3 +47,4 @@ if(at_home()){
                     player_test_data[["Allen Iverson_adv"]])
 }
 
+expect_error(player_data("Kobe Bryant", "NS"))

@@ -10,3 +10,5 @@ if(at_home()){
   expect_equivalent(sportscraper:::nhl_team("Boston Bruins", xml2::read_html("data/BostonBruins.html")), 
                     team_test_data[["Boston Bruins"]])
 }
+
+expect_error(team_data("Chicago Cubs", "SDF"))

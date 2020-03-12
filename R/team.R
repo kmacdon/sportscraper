@@ -22,8 +22,6 @@ team_data <- function(team, league, defensive = F){
     df <- mlb_team(team, page, defensive)
   } else if (league == "NFL"){
     df <- nfl_team(team, page)
-  } else {
-    stop(paste0("Error: league ", "'", league,"'"," not recognized"))
   }
   df
 }

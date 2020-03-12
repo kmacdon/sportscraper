@@ -32,8 +32,6 @@ player_data <- function(player, league, advanced = F){
     df <- mlb_player(player, page, advanced)
   } else if (league == "CBB"){
     df <- cbb_player(player, page, advanced)
-  } else {
-    stop(paste("Error: league ", "'", league,"'"," not recognized", sep=""))
   }
   df
 }
