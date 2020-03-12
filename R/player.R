@@ -21,17 +21,17 @@
 #' }
 #' @export
 player_data <- function(player, league, advanced = F){
-  page <- access_page(player, league)
+  tables <- get_tables(player, league)
   if(league == "NBA"){
-    df <- nba_player(player, page, advanced)
+    df <- nba_player(player, tables, advanced)
   } else if (league == "NFL"){
-    df <- nfl_player(player, page)
+    df <- nfl_player(player, tables)
   } else if (league == "NHL"){
-    df <- nhl_player(player, page)
+    df <- nhl_player(player, tables)
   } else if (league == "MLB"){
-    df <- mlb_player(player, page, advanced)
+    df <- mlb_player(player, tables, advanced)
   } else if (league == "CBB"){
-    df <- cbb_player(player, page, advanced)
+    df <- cbb_player(player, tables, advanced)
   }
   df
 }
@@ -39,7 +39,7 @@ player_data <- function(player, league, advanced = F){
 #' @importFrom magrittr "%>%"
 
 # This function searches for player and navigates to appropriate page
-access_page <- function(search, league){
+get_tables <- function(search, league){
   url <- switch(toupper(league),
                 "NBA" = "https://www.basketball-reference.com/",
                 "NFL" = "https://www.pro-football-reference.com",
@@ -110,40 +110,35 @@ access_page <- function(search, league){
     }
 
   }
-  xml2::read_html(s)
+  s <- 
+    s %>% 
+    xml2::read_html() %>% 
+    rvest::html_nodes( xpath = "//comment()") %>%
+    rvest::html_text() %>%
+    paste( collapse = "") %>%
+    xml2::read_html() %>%
+    rvest::html_table(fill = T)
+  s
 }
 
-nba_player <- function(player, page, advanced){
+nba_player <- function(player, tables, advanced){
   # Data collection
   if(!advanced){
-    df <-
-      page %>%
-      rvest::html_table( fill=T) %>%
-      as.data.frame()
+    df <- tables[[1]]
   } else {
-    df <-
-      page %>%
-      rvest::html_nodes( xpath = "//comment()") %>%
-      rvest::html_text() %>%
-      paste( collapse = "") %>%
-      xml2::read_html() %>%
-      rvest::html_table( fill = T)
-    # Select advanced data frame from list of all tables on page
-    df <- df[sapply(df, function(x) {"PER" %in% names(x)}, simplify = "vector")][[1]]
+    df <- tables[sapply(tables, function(x) {"PER" %in% names(x)}, simplify = "vector")][[1]]
   }
 
   # Data cleaning: Remove empty col, summary rows, add name
   df <- df[!(colSums(is.na(df)) == nrow(df))]
   df <- df[stringr::str_detect(df$Season, "[0-9]*-[0-9]*"), ]
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
+  df
 }
 
-nfl_player <- function(player, page){
+nfl_player <- function(player, tables){
   # Data Collection
-  df <-
-    page %>%
-    rvest::html_table( fill=T) %>%
-    .[[1]]
+  df <- tables[[1]]
 
   # QBs have differently structured DFs
   if(any(df$Pos == "QB")){
@@ -153,6 +148,8 @@ nfl_player <- function(player, page){
     df <- df[!stringr::str_detect(df$Year, "[a-z]")]
     df <- 
       suppressWarnings(df %>% tidyr::separate("QBrec", c("W", "L", "Tie"), sep="-"))
+    
+    df$Tie <- ifelse(is.na(df$Tie), 0, df$Tie)
     
     df <- 
       suppressWarnings(df %>% 
@@ -180,14 +177,12 @@ nfl_player <- function(player, page){
   df$Year <- stringr::str_extract(df$Year, "[0-9]*")
   df$Pos <- toupper(df$Pos)
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
+  df
 }
 
-nhl_player <- function(player, page){
+nhl_player <- function(player, tables){
   # Data Collection
-  df <-
-    page %>%
-    rvest::html_table( fill=T) %>%
-    .[[1]]
+  df <- tables[[1]]
 
   # Data Cleaning
 
@@ -208,24 +203,15 @@ nhl_player <- function(player, page){
       .[, grep("Awards", names(.), invert=TRUE)]
   }
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
+  df
 }
 
-mlb_player <- function(player, page, advanced){
+mlb_player <- function(player, tables, advanced){
   # Data Colleciton
   if(!advanced){
-    df <-
-      page %>%
-      rvest::html_table( fill=T) %>%
-      as.data.frame()
+    df <- tables[[1]]
   } else {
-    df <-
-      page %>%
-      rvest::html_nodes( xpath = "//comment()") %>%
-      rvest::html_text() %>%
-      paste( collapse = "") %>%
-      xml2::read_html() %>%
-      rvest::html_table( fill = T)
-    df <- df[sapply(df, function(x) "Salary" %in% names(x), simplify = "vector")][[1]]
+    df <- tables[sapply(tables, function(x) "Salary" %in% names(x), simplify = "vector")][[1]]
   }
 
   # Data Cleaning
@@ -239,23 +225,13 @@ mlb_player <- function(player, page, advanced){
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
 
-cbb_player <- function(player, page, advanced){
+cbb_player <- function(player, tables, advanced){
   # Data Collection
   if(!advanced){
-    df <-
-      page %>%
-      rvest::html_table( fill=T) %>%
-      as.data.frame()
+    df <- tables[[1]]
   } else {
-    df <-
-      page %>%
-      rvest::html_nodes( xpath = "//comment()") %>%
-      rvest::html_text() %>%
-      paste( collapse = "") %>%
-      xml2::read_html() %>%
-      rvest::html_table( fill = T)
     # Extract list element that contains advanced stats
-    df <- df[sapply(df, function(x) "WS" %in% names(x), simplify = "vector")][[1]]
+    df <- tables[sapply(tables, function(x) "WS" %in% names(x), simplify = "vector")][[1]]
   }
 
   # Data Cleaning
@@ -268,4 +244,5 @@ cbb_player <- function(player, page, advanced){
   }
 
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
+  df
 }

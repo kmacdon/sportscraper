@@ -10,7 +10,7 @@
 #'     season and then the rest are their respective statistics.
 #' @export
 team_data <- function(team, league, defensive = F){
-  page <- access_team_page(team, league)
+  page <- get_team_tables(team, league)
   if(league == "NBA"){
     df <- nba_team(team, page, defensive)
   } else if (league == "NHL"){
@@ -27,7 +27,7 @@ team_data <- function(team, league, defensive = F){
 }
 
 # This function searches for team and navigates to appropriate page
-access_team_page <- function(team, league){
+get_team_tables <- function(team, league){
   url <- switch(toupper(league),
                 "NBA" = "https://www.basketball-reference.com/",
                 "NFL" = "https://www.pro-football-reference.com",
