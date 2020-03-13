@@ -50,7 +50,8 @@ get_team_tables <- function(team, league){
       s %>% 
       rvest::follow_link(., team) %>% 
       rvest::jump_to(., "history.html") %>% 
-      xml2::read_html()
+      xml2::read_html() %>% 
+      rvest::html_table(fill = TRUE)
     return(s)
   } else if (toupper(league) == "MLB"){
     # Another stop gap to keep this working for the time being
@@ -63,7 +64,9 @@ get_team_tables <- function(team, league){
   s <- 
     s %>% 
     rvest::follow_link(., team) %>% 
-    xml2::read_html()
+    xml2::read_html() %>% 
+    rvest::html_table(fill=TRUE)
+  s
 }
 
 
@@ -105,12 +108,9 @@ nba_team <- function(team, page, defensive){
   df <- df[!(colSums(is.na(df)) == nrow(df))]
 }
 
-nhl_team <- function(team, page){
+nhl_team <- function(team, tables){
 
-  df <-
-    page %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.)
+  df <- as.data.frame(tables)
 
   # Data Cleaning
   df$T[is.na(df$T)] <- 0
@@ -159,35 +159,27 @@ mlb_team <- function(team, page, defensive){
 }
 
 
-nfl_team <- function(team, page){
+nfl_team <- function(team, tables){
   
-  df <-
-    page %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.)
+  prefix <- tolower(stringr::str_replace_all(names(tables[[1]]), " ", "_"))
+  col_names <- tables[[1]][1, ]
+  col_names <- paste(prefix, col_names, sep = "_")
+  col_names <- stringr::str_remove(col_names, "^_")
+  df <- as.data.frame(tables[[1]][-1, ])
+  names(df) <- col_names
   
   # Cleaning
-  col_names <- df[1, ]
-  col_names[stringr::str_detect(names(df), "Players")] <- paste0("Top_", col_names[stringr::str_detect(names(df), "Players")])
-  col_names[stringr::str_detect(names(df), "Off")] <- paste0("Off_", col_names[stringr::str_detect(names(df), "Off")])
-  col_names[stringr::str_detect(col_names, "out of")] <- "Team_Count"
-  
-  names(df) <- col_names
-  df <- df[-1, ]
-  
   # remove rows that only have text
   df <- df[apply(df, 1, function(x){any(stringr::str_detect(x, "[0-9]"))}), ]
   
   df <- 
     df %>% 
-    dplyr::mutate_if(., 
-              function(x){
-                !any(stringr::str_detect(x, "[a-zA-Z]"))
-              }, 
-              function(x){
-                as.numeric(x)
-              })
-  
+    dplyr::mutate_if(function(x){
+      !any(stringr::str_detect(x, '[a-zA-Z]'))
+    }, 
+    function(x){
+      as.numeric(x)
+    })
   df$Tm <- stringr::str_remove_all(df$Tm, "[\\*]")
   df$`Div. Finish` <- as.numeric(stringr::str_sub(df$`Div. Finish`, end=1))
   
