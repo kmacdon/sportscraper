@@ -56,8 +56,33 @@ get_team_tables <- function(team, league, defensive){
       rvest::html_table(fill = TRUE)
     return(s)
   } else if (toupper(league) == "MLB"){
-    # Another stop gap to keep this working for the time being
-    return(s)
+    
+    df <-
+      s %>%
+      xml2::read_html() %>% 
+      rvest::html_table(fill=T) %>%
+      as.data.frame()
+    
+    if(defensive){
+      s <-
+        s %>%
+        rvest::follow_link("Pitching")
+    } else {
+      s <-
+        s %>%
+        rvest::follow_link("Batting")
+    }
+    
+    df2 <-
+      s %>%
+      xml2::read_html() %>%
+      rvest::html_table(fill=T) %>%
+      as.data.frame()
+    df2 <-
+      df2 %>%
+      dplyr::select(-"Lg", -"W", -"L", -"Finish")
+    
+    return(list(df, df2))
   } else if (toupper(league) == "NBA"){
     df <-
       s %>%
@@ -128,40 +153,15 @@ nhl_team <- function(team, tables){
   df
 }
 
-mlb_team <- function(team, page, defensive){
+mlb_team <- function(team, tables, defensive){
+  df <- tables[[1]]
+  df2 <- tables[[2]]
 
-  df <-
-    page %>%
-    xml2::read_html() %>% 
-    rvest::html_table(fill=T) %>%
-    as.data.frame()
-
-  if(defensive){
-    page <-
-      page %>%
-      rvest::follow_link("Pitching")
-  } else {
-    page <-
-      page %>%
-      rvest::follow_link("Batting")
-  }
-
-  df2 <-
-    page %>%
-    xml2::read_html() %>%
-    rvest::html_table(fill=T) %>%
-    as.data.frame()
-  df2 <-
-    df2 %>%
-    dplyr::select(-"Lg", -"W", -"L", -"Finish")
-  # USE setdiff instead of this select
-  
-  if(defensive){
-    #should change variable names that this shares with batting statistics
-  }
   df <- dplyr::left_join(df, df2, by = "Year")
+  
   # Data Cleaning
   df$GB[df$GB == "--"] <- 0
+  df$GB <- as.numeric(df$GB)
 
   df
 }
