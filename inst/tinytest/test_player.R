@@ -10,6 +10,12 @@ if(at_home()){
   
   expect_equivalent(sportscraper::player_data("Joe Montana", "NFL"), 
                     player_test_data[["Joe Montana"]])
+  expect_equivalent(sportscraper::player_data("Jim Brown", "NFL"), 
+                    player_test_data[["Jim Brown"]])
+  expect_equivalent(sportscraper::player_data("Randy Moss", "NFL"), 
+                    player_test_data[["Randy Moss"]])
+  expect_equivalent(sportscraper::player_data("Ray Lewis", "NFL"), 
+                    player_test_data[["Ray Lewis"]])
   
   expect_equivalent(sportscraper::player_data("Bobby Or", "NHL"), 
                     player_test_data[["Bobby Or"]])
@@ -21,7 +27,6 @@ if(at_home()){
   
   expect_equivalent(sportscraper::player_data("Allen Iverson", "CBB", advanced=FALSE), 
                     player_test_data[["Allen Iverson"]])
-  
   expect_equivalent(sportscraper::player_data("Allen Iverson", "CBB", advanced=TRUE), 
                     player_test_data[["Allen Iverson adv"]])
 } else {
@@ -32,6 +37,12 @@ if(at_home()){
 
   expect_equivalent(sportscraper:::nfl_player("Joe Montana", player_table_data[["Joe Montana"]]), 
                     player_test_data[["Joe Montana"]])
+  expect_equivalent(sportscraper:::nfl_player("Jim Brown", player_table_data[["Jim Brown"]]), 
+                    player_test_data[["Jim Brown"]])
+  expect_equivalent(sportscraper:::nfl_player("Randy Moss", player_table_data[["Randy Moss"]]), 
+                    player_test_data[["Randy Moss"]])
+  expect_equivalent(sportscraper:::nfl_player("Ray Lewis", player_table_data[["Ray Lewis"]]), 
+                    player_test_data[["Ray Lewis"]])
   
   expect_equivalent(sportscraper:::nhl_player("Bobby Or", player_table_data[["Bobby Or"]]), 
                     player_test_data[["Bobby Or"]])
@@ -43,7 +54,8 @@ if(at_home()){
   
   expect_equivalent(sportscraper:::cbb_player("Allen Iverson", player_table_data[["Allen Iverson"]], advanced=FALSE), 
                     player_test_data[["Allen Iverson"]])
-  
+  expect_equivalent(sportscraper:::cbb_player("Kevin Durant", player_table_data[["Kevin Durant"]], advanced=FALSE), 
+                    player_test_data[["Kevin Durant"]])
   expect_equivalent(sportscraper:::cbb_player("Allen Iverson", player_table_data[["Allen Iverson"]], advanced=TRUE), 
                     player_test_data[["Allen Iverson adv"]])
 }
