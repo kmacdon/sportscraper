@@ -110,15 +110,28 @@ get_tables <- function(search, league){
     }
 
   }
-  s <- 
+  
+  tables1 <- 
     s %>% 
     xml2::read_html() %>% 
-    rvest::html_nodes( xpath = "//comment()") %>%
+    rvest::html_table(fill = T)
+  
+  # Some tables are stored in commented out sections
+  tables2 <- 
+    s %>% 
+    xml2::read_html() %>% 
+    rvest::html_nodes(xpath = "//comment()") %>%
     rvest::html_text() %>%
-    paste( collapse = "") %>%
+    paste(collapse = "") %>%
     xml2::read_html() %>%
     rvest::html_table(fill = T)
-  s
+  
+  # Append lists
+  for(i in 1:length(tables2)){
+    tables1[[length(tables1) + i]] <- tables2[[i]]
+  }
+  
+  tables1
 }
 
 nba_player <- function(player, tables, advanced){
@@ -173,8 +186,14 @@ nfl_player <- function(player, tables){
     }
     names(df) <- names
   }
-  df <- df[!stringr::str_detect(df$Year, "[a-zA-Z]"), ]
+  df <- df[stringr::str_detect(df$Year, "[0-9]{4}"), ]
   df$Year <- stringr::str_extract(df$Year, "[0-9]*")
+  
+  df <- 
+  suppressWarnings(df %>% 
+                     dplyr::mutate_if(function(x){any(stringr::str_detect(x, "[0-9]"))},
+                                      function(x){as.numeric(x)}))
+  
   df$Pos <- toupper(df$Pos)
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
   df
@@ -215,12 +234,19 @@ mlb_player <- function(player, tables, advanced){
   }
 
   # Data Cleaning
-  df <- df[!stringr::str_detect(df$Year, "[a-zA-Z]"), ]
+  df <- df[stringr::str_detect(df$Year, "[0-9]{4}"), ]
   if("Awards" %in% names(df)){
     df <-
       df %>%
       .[, grep("Awards", names(.), invert=TRUE)]
   }
+  
+  # Convert data types
+  df <- 
+    df %>% 
+    dplyr::mutate_if(function(x){!any(stringr::str_detect(x, "[a-zA-Z]"))},
+                     function(x){as.numeric(x)})
+  
 
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
 }
@@ -237,11 +263,6 @@ cbb_player <- function(player, tables, advanced){
   # Data Cleaning
   df <- df[stringr::str_detect(df$Season, "[0-9]*-[0-9]*"),]
   df <- df[!(colSums(is.na(df)) == nrow(df))]
-  if("Awards" %in% names(df)){
-    df <-
-      df %>%
-      .[, grep("Awards", names(.), invert=TRUE)]
-  }
 
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
   df
