@@ -217,9 +217,7 @@ nhl_player <- function(player, tables){
   names(df) <- names
   df <- df[stringr::str_detect(df[, 1], "[0-9]*-[0-9]*"), ]
   if("Awards" %in% names(df)){
-    df <-
-      df %>%
-      .[, grep("Awards", names(.), invert=TRUE)]
+    df <- df[, grep("Awards", names(df), invert=TRUE)]
   }
   df <- data.frame(Name = rep(player, nrow(df)), df, stringsAsFactors = FALSE)
   df
@@ -236,9 +234,7 @@ mlb_player <- function(player, tables, advanced){
   # Data Cleaning
   df <- df[stringr::str_detect(df$Year, "[0-9]{4}"), ]
   if("Awards" %in% names(df)){
-    df <-
-      df %>%
-      .[, grep("Awards", names(.), invert=TRUE)]
+    df <- df[, grep("Awards", names(df), invert=TRUE)]
   }
   
   # Convert data types
