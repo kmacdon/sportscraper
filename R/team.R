@@ -109,7 +109,7 @@ nba_team <- function(team, tables, defensive){
     names(df2)[-1] <- paste("O_", names(df2)[-1], sep = "")
   }
   
-  df <- dplyr::left_join(df, df2, by = "Season")
+  df <- dplyr::left_join(df1, df2, by = "Season")
 
   df$Team <- stringr::str_extract(df$Team, "[a-zA-Z ]*")
   df <- df[!(colSums(is.na(df)) == nrow(df))]
