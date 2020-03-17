@@ -37,19 +37,19 @@ get_team_tables <- function(team, league){
   s <- rvest::html_session(url)
   f <-
     rvest::html_form(s)[[1]] %>%
-    rvest::set_values(., search=team)
+    rvest::set_values(search=team)
   
   # Get rid of the "Submitting with 'NULL'" message
   s <-
     suppressMessages(rvest::submit_form(s,f)$url) %>%
-    rvest::html_session(.)
+    rvest::html_session()
   
   if(toupper(league) == "NHL"){
     # Part time fix until more robust solution is found
     s <- 
       s %>% 
-      rvest::follow_link(., team) %>% 
-      rvest::jump_to(., "history.html") %>% 
+      rvest::follow_link(team) %>% 
+      rvest::jump_to("history.html") %>% 
       xml2::read_html() %>% 
       rvest::html_table(fill = TRUE)
     return(s)
@@ -57,13 +57,13 @@ get_team_tables <- function(team, league){
     # Another stop gap to keep this working for the time being
     s <- 
       s %>% 
-      rvest::follow_link(., team)
+      rvest::follow_link(team)
     return(s)
   }
   
   s <- 
     s %>% 
-    rvest::follow_link(., team) %>% 
+    rvest::follow_link(team) %>% 
     xml2::read_html() %>% 
     rvest::html_table(fill=TRUE)
   s
@@ -75,30 +75,30 @@ nba_team <- function(team, page, defensive){
   # Data Collection
   df <-
     page %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.)
+    rvest::html_table(fill=T) %>%
+    as.data.frame()
 
   if (defensive){
     page <-
       page %>%
-      rvest::follow_link(., "Opponent Stats Per Game")
+      rvest::follow_link("Opponent Stats Per Game")
   } else {
     page <-
       page %>%
-      rvest::follow_link(., "Team Stats Per Game")
+      rvest::follow_link("Team Stats Per Game")
   }
 
   # Data Cleaning
   df2 <-
     page %>%
-    xml2::read_html(.) %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.)
+    xml2::read_html() %>%
+    rvest::html_table(fill=T) %>%
+    as.data.frame()
   df2 <- df2[!stringr::str_detect(df2$Season, "[a-zA-Z]"), ]
   df2 <- df2[!(colSums(is.na(df2)) == nrow(df2))]
   df2 <-
     df2 %>%
-    dplyr::select(., -Lg, -Tm, -W, -L, -Finish, -G, -MP)
+    dplyr::select(-"Lg", -"Tm", -"W", -"L", -"Finish", -"G", -"MP")
   if(defensive){
     names(df2)[-1] <- paste("O_", names(df2)[-1], sep = "")
   }
@@ -125,27 +125,27 @@ mlb_team <- function(team, page, defensive){
   df <-
     page %>%
     xml2::read_html() %>% 
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.)
+    rvest::html_table(fill=T) %>%
+    as.data.frame()
 
   if(defensive){
     page <-
       page %>%
-      rvest::follow_link(., "Pitching")
+      rvest::follow_link("Pitching")
   } else {
     page <-
       page %>%
-      rvest::follow_link(., "Batting")
+      rvest::follow_link("Batting")
   }
 
   df2 <-
     page %>%
-    xml2::read_html(.) %>%
-    rvest::html_table(., fill=T) %>%
-    as.data.frame(.)
+    xml2::read_html() %>%
+    rvest::html_table(fill=T) %>%
+    as.data.frame()
   df2 <-
     df2 %>%
-    dplyr::select(., -Lg, -W, -L, -Finish)
+    dplyr::select(-"Lg", -"W", -"L", -"Finish")
   # USE setdiff instead of this select
   
   if(defensive){
