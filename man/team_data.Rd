@@ -4,7 +4,7 @@
 \alias{team_data}
 \title{Scrape Team Season Stats}
 \usage{
-team_data(team, league, defensive = F)
+team_data(team, league, defensive = FALSE)
 }
 \arguments{
 \item{team}{A string containing the full name of the team}
@@ -14,9 +14,7 @@ team_data(team, league, defensive = F)
 \item{defensive}{Whether to return defensive stats or offensive. Only applies for NBA and MLB teams}
 }
 \value{
-A data frame containing seasonal data for the team. Both offensive
-    and defensive return the same set of advanced statistics for the
-    season and then the rest are their respective statistics.
+A data frame containing seasonal data for the team.
 }
 \description{
 Scrape the seasonal statistics for a specific team.
