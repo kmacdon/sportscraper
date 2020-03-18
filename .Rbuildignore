@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+generate.R
+.gitignore
+^LICENSE\.md$
+LICENSE\.md
+.DS_Store
+TODO
+^.travis.yml
+cran-comments.md

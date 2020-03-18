@@ -5,6 +5,4 @@
 *.Rproj
 *TODO
 *.DS_Store
-.Rbuildignore
-generate.R
 cran-comments.md
